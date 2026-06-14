@@ -6,7 +6,7 @@
     <title>Tic-Tac-Toe</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body oncontextmenu="return false;">
     <div class="game-container">
         <h1 class="title">Tic-Tac-Toe</h1>
         <div id="status-display" class="status player-x-turn">Player X turn</div>
@@ -23,6 +23,22 @@
         </div>
         <button id="reset-btn" class="reset-button">Reset Game</button>
     </div>
+    <script>
+        // Debug script to check if files loaded
+        window.onload = function() {
+            var style = document.getElementById('status-display');
+            if (!style) {
+                alert("Warning: The DOM might not be loading correctly.");
+            } else {
+                console.log("DOM loaded successfully.");
+            }
+        };
+        
+        // Check if script.js is loaded
+        window.onerror = function(msg, url, lineNo, colNo, error) {
+            alert("JavaScript Error: " + msg + " at " + url + ":" + lineNo);
+        };
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
