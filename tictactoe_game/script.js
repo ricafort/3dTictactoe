@@ -12,31 +12,28 @@ let scoreX = 0;
 let scoreO = 0;
 
 const winningConditions = [
-    [0, 1, 2], 
-    [3, 4, 5], 
-    [6, 7, 8], 
-    [0, 3, 6], 
-    [1, 4, 7], 
-    [2, 5, 8], 
-    [0, 4, 8], 
-    [2, 4, 6]
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
 ];
 
 function handleCellClick(e) {
     const cell = e.target;
     const index = cell.getAttribute('data-index');
 
-    if (board[index] !== null || !gameActive || currentPlayer === 'O') {
-        return;
-    }
+    if (board[index] !== null || !gameActive || currentPlayer === 'O') return;
 
     makeMove(index, 'X');
 
     if (gameActive && currentPlayer === 'O') {
-        statusDisplay.innerText = "AI is thinking...";
         setTimeout(() => {
+            if (!gameActive) return;
             const bestMove = getBestMove();
-            makeMove(bestMove, 'O');
+            if (bestMove !== -1) makeMove(bestMove, 'O');
+            else {
+                statusDisplay.innerText = "Error in AI logic";
+                gameActive = false;
+            }
         }, 500);
     }
 }
@@ -94,7 +91,7 @@ function getBestMove() {
     for (let i = 0; i < 9; i++) {
         if (board[i] === null) {
             board[i] = 'O';
-            let score = minimax(board, false); 
+            let score = minimax(board, false);
             board[i] = null;
             if (score > bestScore) {
                 bestScore = score;
@@ -144,8 +141,10 @@ function resetGame() {
     cells.forEach(cell => {
         cell.innerText = "";
         cell.classList.remove('taken');
+        cell.style.color = '';
     });
 }
 
+statusDisplay.innerText = "Your Turn (X)";
 cells.forEach(cell => cell.addEventListener('click', handleCellClick));
 resetBtn.addEventListener('click', resetGame);
