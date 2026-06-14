@@ -3,26 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe Unbeatable AI</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Tic-Tac-Toe Game with AI</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="game-container">
-        <h1>Tic-Tac-Toe AI</h1>
-        <div id="game-status"></div>
-        <div id="game-board">
-            <div class="cell" data-cell-index="0"></div>
-            <div class="cell" data-cell-index="1"></div>
-            <div class="cell" data-cell-index="2"></div>
-            <div class="cell" data-cell-index="3"></div>
-            <div class="cell" data-cell-index="4"></div>
-            <div class="cell" data-cell-index="5"></div>
-            <div class="cell" data-cell-index="6"></div>
-            <div class="cell" data-cell-index="7"></div>
-            <div class="cell" data-cell-index="8"></div>
+    <section class="game-container">
+        <h1 class="game--title">Tic-Tac-Toe</h1>
+        <!-- This element will display game status messages (e.g., "X's turn", "O wins!") -->
+        <div class="game--status"></div>
+        <div class="game--board">
+            <!-- Each div represents a cell on the Tic-Tac-Toe board -->
+            <div data-cell-index="0" class="cell"></div>
+            <div data-cell-index="1" class="cell"></div>
+            <div data-cell-index="2" class="cell"></div>
+            <div data-cell-index="3" class="cell"></div>
+            <div data-cell-index="4" class="cell"></div>
+            <div data-cell-index="5" class="cell"></div>
+            <div data-cell-index="6" class="cell"></div>
+            <div data-cell-index="7" class="cell"></div>
+            <div data-cell-index="8" class="cell"></div>
         </div>
-        <button id="reset-button">Reset Game</button>
-    </div>
-    <script src="script.js" defer></script>
+        <button class="game--restart">Restart Game</button>
+    </section>
+    <script src="script.js"></script>
 </body>
 </html>
