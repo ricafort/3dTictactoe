@@ -1,0 +1,131 @@
+:root {
+    --bg-color: #282c34; /* Dark background */
+    --board-bg: #3c4048; /* Slightly lighter for board container */
+    --cell-bg: #4e535a; /* Even lighter for cells */
+    --text-color: #f8f8f2; /* Light text */
+    --player-x-color: #4ecca3; /* Greenish, from JS */
+    --player-o-color: #e94560; /* Reddish, from JS */
+    --accent-color: #bd93f9; /* Purple for buttons */
+    --accent-hover: #ab85e0;
+    --status-color: #50fa7b; /* Bright green for status */
+    --border-color: #6272a4; /* Bluish gray for board gaps/hover */
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden; /* Prevent scrollbar if board slightly larger */
+}
+
+.game-container {
+    background-color: var(--board-bg);
+    padding: 2.5rem;
+    border-radius: 10px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    max-width: 400px; /* Adjust based on desired board size + padding */
+    width: 100%;
+    margin: 20px;
+}
+
+.game--title {
+    font-size: 3em;
+    margin-bottom: 1.5rem;
+    color: var(--player-x-color); /* Title color matching X */
+    text-shadow: 0 0 10px rgba(78, 204, 163, 0.5); /* Shadow matching X color */
+}
+
+.game--info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 0 10px;
+}
+
+.game--status {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--status-color);
+    flex-grow: 1;
+    text-align: left;
+}
+
+.game--scores {
+    font-size: 1.1em;
+    font-weight: bold;
+    display: flex;
+    gap: 15px;
+    text-align: right;
+}
+
+.game--scores #scoreX {
+    color: var(--player-x-color);
+}
+
+.game--scores #scoreO {
+    color: var(--player-o-color);
+}
+
+.game--board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px); /* 3 columns, 100px each */
+    grid-template-rows: repeat(3, 100px); /* 3 rows, 100px each */
+    gap: 10px; /* Space between cells */
+    width: 320px; /* 3*100px + 2*10px (gaps) */
+    height: 320px;
+    margin: 0 auto 2rem auto;
+    background-color: var(--border-color); /* Background for gaps */
+    border-radius: 5px;
+    padding: 5px; /* Visual border around the grid */
+}
+
+.cell {
+    background-color: var(--cell-bg);
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    user-select: none;
+}
+
+.cell:not(.taken):hover {
+    background-color: var(--border-color);
+    transform: scale(1.02);
+}
+
+.cell:active {
+    transform: scale(0.98);
+}
+
+.game--restart {
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    border: none;
+    padding: 0.8rem 1.8rem;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.game--restart:hover {
+    background-color: var(--accent-hover);
+}
+
+.game--restart:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
