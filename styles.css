@@ -5,6 +5,11 @@
     --text-secondary: #94a3b8;
     --brand-color: #8b5cf6;
     --brand-hover: #7c3aed;
+    --cell-border: #334155;
+    --player-x-color: #ef4444;
+    --player-o-color: #38bdf8;
+    --winner-color: #10b981;
+    --draw-color: #fbbf24;
 }
 
 body {
@@ -16,32 +21,91 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-.card {
+.game-container {
     background-color: var(--card-bg);
-    border: 1px solid #334155;
+    border: 1px solid var(--cell-border);
     padding: 2.5rem;
     border-radius: 1rem;
-    max-width: 400px;
+    max-width: 450px;
     text-align: center;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
 
-h1 {
+.title {
     margin-top: 0;
+    margin-bottom: 1.5rem;
     background: linear-gradient(to right, #a78bfa, #818cf8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-p {
+.status {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
     color: var(--text-secondary);
-    line-height: 1.5;
-    margin-bottom: 2rem;
+    min-height: 1.5rem;
 }
 
-button {
+.status.player-x-turn {
+    color: var(--player-x-color);
+}
+
+.status.player-o-turn {
+    color: var(--player-o-color);
+}
+
+.status.winner {
+    color: var(--winner-color);
+}
+
+.status.draw {
+    color: var(--draw-color);
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 8px;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto 2rem auto;
+}
+
+.cell {
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    border: 2px solid var(--cell-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-radius: 0.5rem;
+    user-select: none;
+}
+
+.cell:not(.player-x):not(.player-o):hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.cell.player-x {
+    color: var(--player-x-color);
+}
+
+.cell.player-o {
+    color: var(--player-o-color);
+}
+
+.reset-button {
     background: var(--brand-color);
     color: white;
     border: none;
@@ -50,19 +114,13 @@ button {
     border-radius: 0.5rem;
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
+    font-size: 1rem;
 }
 
-button:hover {
+.reset-button:hover {
     background-color: var(--brand-hover);
 }
 
-button:active {
+.reset-button:active {
     transform: scale(0.98);
-}
-
-#output {
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
-    color: #38bdf8;
-    font-family: monospace;
 }
