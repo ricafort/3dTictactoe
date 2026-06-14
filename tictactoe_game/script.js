@@ -34,9 +34,8 @@ function handleCellClick(e) {
 
     if (gameActive && currentPlayer === 'O') {
         statusDisplay.innerText = "AI is thinking...";
-        // Small delay to make it feel more natural
         setTimeout(() => {
-            const bestMove = minimax(board, 'O').index;
+            const bestMove = getBestMove();
             makeMove(bestMove, 'O');
         }, 500);
     }
@@ -48,10 +47,11 @@ function makeMove(index, player) {
     cells[index].classList.add('taken');
     cells[index].style.color = player === 'X' ? '#4ecca3' : '#e94560';
 
-    if (checkWin(board, player)) {
-        statusDisplay.innerText = player === 'X' ? "You Win!" : "AI Wins!";
+    const winner = getWinner(board);
+    if (winner) {
+        statusDisplay.innerText = winner === 'X' ? "You Win!" : "AI Wins!";
         gameActive = false;
-        updateScore(player);
+        updateScore(winner);
         return;
     }
 
@@ -67,10 +67,14 @@ function makeMove(index, player) {
     }
 }
 
-function checkWin(currentBoard, player) {
-    return winningConditions.some(condition => {
-        return condition.every(index => currentBoard[index] === player);
-    });
+function getWinner(currentBoard) {
+    for (let condition of winningConditions) {
+        const [a, b, c] = condition;
+        if (currentBoard[a] && currentBoard[a] === currentBoard[b] && currentBoard[a] === currentBoard[c]) {
+            return currentBoard[a];
+        }
+    }
+    return null;
 }
 
 function updateScore(winner) {
@@ -84,52 +88,51 @@ function updateScore(winner) {
     }
 }
 
-function minimax(newBoard, player) {
-    const availSpots = newBoard.filter(Bool).map((v, i) => v === null ? i : null).filter(v => v !== null);
-    
-    // Check for win/loss/draw
-    if (checkWin(newBoard, 'X')) return { score: -10 };
-    if (checkWin(newBoard, 'O')) return { score: 10 };
-    if (availSpots.length === 0) return { score: 0 };
-
-    const moves = [];
+function getBestMove() {
+    let bestScore = -Infinity;
+    let move = -1;
     for (let i = 0; i < 9; i++) {
-        if (newBoard[i] === null) {
-            newBoard[i] = player;
-            moves.push(minimax(newBoard, player === 'X' ? 'O' : 'X'));
-            newBoard[i] = null;
+        if (board[i] === null) {
+            board[i] = 'O';
+            let score = minimax(board, false); 
+            board[i] = null;
+            if (score > bestScore) {
+                bestScore = score;
+                move = i;
+            }
         }
     }
+    return move;
+}
 
-    let bestMove;
-    if (player === 'O') {
+function minimax(newBoard, isMaximizing) {
+    const winner = getWinner(newBoard);
+    if (winner === 'X') return -10;
+    if (winner === 'O') return 10;
+    if (newBoard.every(cell => cell !== null)) return 0;
+
+    if (isMaximizing) {
         let bestScore = -Infinity;
         for (let i = 0; i < 9; i++) {
             if (newBoard[i] === null) {
                 newBoard[i] = 'O';
-                let score = minimax(newBoard, 'X').score;
+                let score = minimax(newBoard, false);
                 newBoard[i] = null;
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestMove = i;
-                }
+                bestScore = Math.max(bestScore, score);
             }
         }
-        return { score: bestScore, index: bestMove };
+        return bestScore;
     } else {
         let bestScore = Infinity;
         for (let i = 0; i < 9; i++) {
             if (newBoard[i] === null) {
                 newBoard[i] = 'X';
-                let score = minimax(newBoard, 'O').score;
+                let score = minimax(newBoard, true);
                 newBoard[i] = null;
-                if (score < bestScore) {
-                    bestScore = score;
-                    bestMove = i;
-                }
+                bestScore = Math.min(bestScore, score);
             }
         }
-        return { score: bestScore, index: bestMove };
+        return bestScore;
     }
 }
 
