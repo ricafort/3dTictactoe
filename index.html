@@ -23,40 +23,6 @@
         </div>
         <button id="reset-btn" class="reset-button">Reset Game</button>
     </div>
-    <script>
-        // --- DIAGNOSTIC SCRIPT ---
-        window.onload = function() {
-            let status = "";
-            let cssLoaded = true;
-            let jsLoaded = true;
-
-            // Check if styles.css is loaded by checking a specific class
-            const statusEl = document.getElementById('status-display');
-            if (!statusEl || !window.getComputedStyle(statusEl).fontFamily) {
-                // This is a simple check; if the browser can't find the stylesheet, 
-                // the styles won't apply.
-                cssLoaded = false;
-            }
-
-            // Check if script.js is loaded (we check for a variable defined in script.js)
-            if (typeof initializeGame !== "function") {
-                jsLoaded = false;
-            }
-
-            if (cssLoaded && jsLoaded) {
-                alert("Diagnostic: CSS and JS Loaded Successfully!");
-            } else {
-                let missing = [];
-                if (!cssLoaded) missing.push("styles.css");
-                if (!jsLoaded) missing.push("script.js");
-                alert("Diagnostic: Missing Files: " + missing.join(", "));
-            }
-        };
-
-        window.onerror = function(msg, url, lineNo, colNo, error) {
-            alert("JavaScript Error: " + msg + " at " + url + ":" + lineNo);
-        };
-    </script>
     <script src="script.js"></script>
 </body>
 </html>
