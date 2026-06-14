@@ -94,9 +94,9 @@ document.addEventListener("DOMContentLoaded", function() {
         return null;
     }
 
-    function checkDraw() {
-        if (!board) return false;
-        return board.every(function(cell) { return cell !== EMPTY; }) && !checkWinner(board);
+    function checkDraw(currentBoardState) {
+        var targetBoard = currentBoardState || board;
+        return targetBoard.every(function(cell) { return cell !== EMPTY; }) && !checkWinner(targetBoard);
     }
 
     function switchPlayer() {
