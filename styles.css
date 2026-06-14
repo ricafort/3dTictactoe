@@ -6,10 +6,10 @@
     --brand-color: #8b5cf6;
     --brand-hover: #7c3aed;
     --cell-border: #334155;
-    --player-x-color: #ef4444;
-    --player-o-color: #38bdf8;
-    --winner-color: #10b981;
-    --draw-color: #fbbf24;
+    --player-x-color: #ef4444; /* Red */
+    --player-o-color: #38bdf8; /* Blue */
+    --winner-color: #10b981;   /* Green */
+    --draw-color: #fbbf24;    /* Yellow */
 }
 
 body {
@@ -23,6 +23,8 @@ body {
     min-height: 100vh;
     padding: 20px;
     box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .game-container {
@@ -31,6 +33,7 @@ body {
     padding: 2.5rem;
     border-radius: 1rem;
     max-width: 450px;
+    width: 100%; /* Ensure it fills available max-width */
     text-align: center;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
@@ -41,6 +44,8 @@ body {
     background: linear-gradient(to right, #a78bfa, #818cf8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-size: 2.5rem;
+    letter-spacing: -0.025em;
 }
 
 .status {
@@ -48,7 +53,8 @@ body {
     font-weight: bold;
     margin-bottom: 1.5rem;
     color: var(--text-secondary);
-    min-height: 1.5rem;
+    min-height: 1.5rem; /* Reserve space to prevent layout shift */
+    transition: color 0.3s ease;
 }
 
 .status.player-x-turn {
@@ -72,8 +78,8 @@ body {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     gap: 8px;
-    width: 300px;
-    height: 300px;
+    width: 300px; /* Fixed width for the board */
+    height: 300px; /* Fixed height for the board */
     margin: 0 auto 2rem auto;
 }
 
@@ -88,9 +94,10 @@ body {
     font-size: 3rem;
     font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, color 0.2s;
     border-radius: 0.5rem;
-    user-select: none;
+    user-select: none; /* Prevent text selection */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 .cell:not(.player-x):not(.player-o):hover {
@@ -115,12 +122,50 @@ body {
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
     font-size: 1rem;
+    letter-spacing: 0.025em;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .reset-button:hover {
     background-color: var(--brand-hover);
+    box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.15), 0 3px 6px -2px rgba(0, 0, 0, 0.08);
 }
 
 .reset-button:active {
     transform: scale(0.98);
+    background-color: var(--brand-hover); /* Keep hover color on active */
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+    .game-container {
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+    }
+
+    .title {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .status {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    .game-board {
+        width: 250px;
+        height: 250px;
+        margin-bottom: 1.5rem;
+    }
+
+    .cell {
+        font-size: 2.5rem;
+    }
+
+    .reset-button {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
 }
