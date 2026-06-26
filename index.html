@@ -77,11 +77,19 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        #reset-btn:hover {
-            background-color: #5a6268;
+   <div id="game-board">
+       <div class="cell" data-index="0"></div>
+       <div class="cell" data-index="1"></div>
+   </div>
+   <div style="margin-top: 20px; text-align: center;">Difficulty:
+       <select id="difficulty-select">
+           <option value="easy">Easy</option>
+           <option value="medium" selected>Medium</option>
+           <option value="hard">Hard/Expert</option>
+       </select>
+   </div>
+    <div class="cell" data-index="2"></div>
+    <div class="cell" data-index="3"></div>
             transform: translateY(-1px);
         }
         #reset-btn:active {
