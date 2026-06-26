@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", function() {
     var statusDisplay = document.getElementById("status-display");
-    var gameBoard = document.getElementById("game-board"); // Not directly used but good to have reference
+    var gameBoard = document.getElementById("game-board");
     var resetButton = document.getElementById("reset-btn");
     var cells = Array.from(document.querySelectorAll(".cell"));
+    var difficultySelect = document.getElementById("difficulty-select");
 
     var PLAYER_X = 'X';
     var PLAYER_O = 'O';
@@ -12,6 +13,9 @@ document.addEventListener("DOMContentLoaded", function() {
     var currentPlayer = PLAYER_X;
     var isGameActive = true;
     var isVsAI = true; // Set to true for AI opponent
+
+    // Difficulty levels: 'easy', 'medium', 'hard'
+    var selectedDifficulty = difficultySelect.value || 'medium';
 
     var winningConditions = [
         [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
@@ -24,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
         currentPlayer = PLAYER_X;
         isGameActive = true;
         renderBoard();
-        updateStatus(PLAYER_X + " turn", "player-x-turn");
+        updateStatus("Ready! Select difficulty if needed.", "player-x-turn");
     }
 
     function renderBoard() {
@@ -109,6 +113,57 @@ document.addEventListener("DOMContentLoaded", function() {
         currentPlayer = (currentPlayer === PLAYER_X) ? PLAYER_O : PLAYER_X;
     }
 
+    // Easy difficulty: Random moves
+    function aiMoveEasy(currentBoard) {
+        var availableMoves = [];
+        for (var i = 0; i < 9; i++) {
+            if (currentBoard[i] === EMPTY) {
+                availableMoves.push(i);
+            }
+        }
+        return Math.floor(Math.random() * availableMoves.length);
+    }
+
+    // Medium difficulty: Shallow minimax with depth limit (2-3)
+    function aiMoveMedium(currentBoard) {
+        var bestVal = -Infinity;
+        var bestMove = -1;
+
+        for (var i = 0; i < 9; i++) {
+            if (currentBoard[i] === EMPTY) {
+                currentBoard[i] = PLAYER_O;
+                var moveVal = minimax(currentBoard, 2, false);
+                currentBoard[i] = EMPTY;
+
+                if (moveVal > bestVal) {
+                    bestVal = moveVal;
+                    bestMove = i;
+                }
+            }
+        }
+        return bestMove;
+    }
+
+    // Hard/Expert difficulty: Full minimax with complete evaluation (unbeatable)
+    function aiMoveHard(currentBoard) {
+        var bestVal = -Infinity;
+        var bestMove = -1;
+
+        for (var i = 0; i < 9; i++) {
+            if (currentBoard[i] === EMPTY) {
+                currentBoard[i] = PLAYER_O;
+                var moveVal = minimax(currentBoard, 0, false);
+                currentBoard[i] = EMPTY;
+
+                if (moveVal > bestVal) {
+                    bestVal = moveVal;
+                    bestMove = i;
+                }
+            }
+        }
+        return bestMove;
+    }
+
     // Minimax AI functions
     function evaluate(currentBoard) {
         var winner = checkWinner(currentBoard);
@@ -149,24 +204,13 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function findBestMove(currentBoard) {
-        var bestVal = -Infinity;
-        var bestMove = -1;
-
-        // Iterate through all empty cells to find the best move for AI
-        for (var i = 0; i < 9; i++) {
-            if (currentBoard[i] === EMPTY) {
-                currentBoard[i] = PLAYER_O; // Hypothetically make the AI's move
-                // Call minimax for the next player (Player X, the minimizing player)
-                var moveVal = minimax(currentBoard, 0, false); 
-                currentBoard[i] = EMPTY; // Undo the hypothetical move
-
-                if (moveVal > bestVal) {
-                    bestVal = moveVal;
-                    bestMove = i;
-                }
-            }
+        if (selectedDifficulty === 'easy') {
+            return aiMoveEasy(currentBoard);
+        } else if (selectedDifficulty === 'medium') {
+            return aiMoveMedium(currentBoard);
+        } else {
+            return aiMoveHard(currentBoard); // Hard/Expert: Full minimax
         }
-        return bestMove;
     }
 
     function aiMove() {
