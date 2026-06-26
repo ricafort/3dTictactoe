@@ -233,3 +233,9 @@
 [2026-06-27 09:56:42] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
 [2026-06-27 09:56:42] react_task completed: payload={'approved': True}
 [2026-06-27 09:56:42] React approval result: approved=True
+[2026-06-27 09:57:18] Awaiting approval for tool=write_file, path=None, diff_future_active=False
+[2026-06-27 09:57:18] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-27 09:57:18] react_task completed: payload={'type': 'open_file', 'path': 'script.js'}
+[2026-06-27 09:57:18] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-27 09:57:18] react_task completed: payload={'approved': True}
+[2026-06-27 09:57:18] React approval result: approved=True
