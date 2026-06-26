@@ -1,233 +1,196 @@
 document.addEventListener("DOMContentLoaded", function() {
-    var statusDisplay = document.getElementById("status-display");
-    var gameBoard = document.getElementById("game-board");
-    var resetButton = document.getElementById("reset-btn");
-    var cells = Array.from(document.querySelectorAll(".cell"));
-    var difficultySelect = document.getElementById("difficulty-select");
 
+    // --- Game Constants ---
     var PLAYER_X = 'X';
     var PLAYER_O = 'O';
-    var EMPTY = '';
 
-    var board = ['', '', '', '', '', '', '', '', ''];
-    var currentPlayer = PLAYER_X;
-    var isGameActive = true;
-    var isVsAI = true; // Set to true for AI opponent
-
-    // Difficulty levels: 'easy', 'medium', 'hard'
+    // --- Game State ---
+    var currentBoard = Array(9).fill('');
     var selectedDifficulty = difficultySelect.value || 'medium';
+    var gameActive = true;
 
+    // --- Winning Conditions ---
     var winningConditions = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-        [0, 4, 8], [2, 4, 6]             // Diagonals
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
     ];
 
-    function initializeGame() {
-        board = Array(9).fill(EMPTY);
-        currentPlayer = PLAYER_X;
-        isGameActive = true;
-        renderBoard();
-        updateStatus("Ready! Select difficulty if needed.", "player-x-turn");
-    }
+    // --- DOM Elements ---
+    var cells = document.querySelectorAll('.cell');
+    var difficultySelector = document.getElementById('difficulty-select');
+    var resetButton = document.getElementById('reset-btn');
+    var statusDisplay = document.getElementById('status-display');
 
-    function renderBoard() {
-        cells.forEach(function(cell, index) {
-            cell.textContent = board[index];
-            cell.classList.remove("player-x", "player-o");
-            if (board[index] === PLAYER_X) {
-                cell.classList.add("player-x");
-            } else if (board[index] === PLAYER_O) {
-                cell.classList.add("player-o");
-            }
-        });
-    }
-
-    function updateStatus(message, type) {
-        statusDisplay.textContent = message;
-        statusDisplay.className = "status " + type; // Overwrites existing classes, ensuring only one status type is active
-    }
-
-    function handleCellClick(event) {
-        var clickedCell = event.target;
-        var clickedCellIndex = parseInt(clickedCell.dataset.index);
-
-        // Prevent moves if game is not active, cell is occupied, or it's AI's turn
-        if (!isGameActive || board[clickedCellIndex] !== EMPTY || (isVsAI && currentPlayer === PLAYER_O)) {
-            return;
-        }
-
-        makeMove(clickedCellIndex, currentPlayer);
-        checkGameStatus();
-
-        // If game is still active and it's AI's turn, make AI move after a short delay
-        if (isGameActive && isVsAI && currentPlayer === PLAYER_O) {
-            setTimeout(aiMove, 500); 
-        }
-    }
-
-    function makeMove(index, player) {
-        board[index] = player;
-        renderBoard();
-    }
-
-    function checkGameStatus() {
-        var winner = checkWinner();
-        if (winner) {
-            isGameActive = false;
-            updateStatus(winner + " wins!", "winner");
-            return;
-        }
-
-        if (checkDraw()) {
-            isGameActive = false;
-            updateStatus("It's a draw!", "draw");
-            return;
-        }
-
-        // If no winner and no draw, switch player
-        switchPlayer();
-        updateStatus(currentPlayer + "'s turn", currentPlayer === PLAYER_X ? "player-x-turn" : "player-o-turn");
-    }
-
-    function checkWinner(currentBoard) {
-        if (!currentBoard) currentBoard = board; // Use global board if no specific board is passed
+    // --- Helper Functions ---
+    function checkWinner(board) {
         for (var i = 0; i < winningConditions.length; i++) {
-            var cond = winningConditions[i];
-            if (currentBoard[cond[0]] && 
-                currentBoard[cond[0]] === currentBoard[cond[1]] && 
-                currentBoard[cond[0]] === currentBoard[cond[2]]) {
-                return currentBoard[cond[0]]; // Return the winning player (X or O)
+            var a = board[winningConditions[i][0]];
+            if (a && a === board[winningConditions[i][1]] && a === board[winningConditions[i][2]]) {
+                return a;
             }
         }
-        return null; // No winner
+        return null;
     }
 
-    function checkDraw(currentBoardState) {
-        var targetBoard = currentBoardState || board;
-        // Check if all cells are filled AND there is no winner
-        return targetBoard.every(function(cell) { return cell !== EMPTY; }) && !checkWinner(targetBoard);
-    }
-
-    function switchPlayer() {
-        currentPlayer = (currentPlayer === PLAYER_X) ? PLAYER_O : PLAYER_X;
-    }
-
-    // Easy difficulty: Random moves
-    function aiMoveEasy(currentBoard) {
-        var availableMoves = [];
+    function getEmptyCells(board) {
+        var empty = [];
         for (var i = 0; i < 9; i++) {
-            if (currentBoard[i] === EMPTY) {
-                availableMoves.push(i);
-            }
+            if (board[i] === '') empty.push(i);
         }
-        return Math.floor(Math.random() * availableMoves.length);
+        return empty;
     }
 
-    // Medium difficulty: Shallow minimax with depth limit (2-3)
-    function aiMoveMedium(currentBoard) {
-        var bestVal = -Infinity;
-        var bestMove = -1;
-
-        for (var i = 0; i < 9; i++) {
-            if (currentBoard[i] === EMPTY) {
-                currentBoard[i] = PLAYER_O;
-                var moveVal = minimax(currentBoard, 2, false);
-                currentBoard[i] = EMPTY;
-
-                if (moveVal > bestVal) {
-                    bestVal = moveVal;
-                    bestMove = i;
-                }
-            }
-        }
-        return bestMove;
+    function isBoardFull(board) {
+        return getEmptyCells(board).length === 0;
     }
 
-    // Hard/Expert difficulty: Full minimax with complete evaluation (unbeatable)
-    function aiMoveHard(currentBoard) {
-        var bestVal = -Infinity;
-        var bestMove = -1;
-
-        for (var i = 0; i < 9; i++) {
-            if (currentBoard[i] === EMPTY) {
-                currentBoard[i] = PLAYER_O;
-                var moveVal = minimax(currentBoard, 0, false);
-                currentBoard[i] = EMPTY;
-
-                if (moveVal > bestVal) {
-                    bestVal = moveVal;
-                    bestMove = i;
-                }
-            }
-        }
-        return bestMove;
+    // --- Minimax Core ---
+    function evaluate(board) {
+        var winner = checkWinner(board);
+        if (winner === PLAYER_O) return 10;
+        if (winner === PLAYER_X) return -10;
+        return 0;
     }
 
-    // Minimax AI functions
-    function evaluate(currentBoard) {
+    /**
+     * Minimax with optional depth limit.
+     * depth = null/undefined → full search (unbeatable)
+     * depth = positive int → limited lookahead
+     */
+    function minimax(board, depth, isMaximizingPlayer) {
+        var score = evaluate(board);
+
+        if (score === 10) return { score: score - ((depth !== null && depth !== undefined) ? depth : 0) };
+        if (score === -10) return { score: score + ((depth !== null && depth !== undefined) ? depth : 0) };
+        if (isBoardFull(board)) return { score: 0 };
+
+        // Depth limit reached → return current evaluation
+        if (depth !== null && depth !== undefined && depth <= 0) {
+            return { score: evaluate(board) };
+        }
+
+        var emptyCells = getEmptyCells(board);
+        var bestScore = isMaximizingPlayer ? -Infinity : Infinity;
+        var bestIndex = -1;
+
+        for (var i = 0; i < emptyCells.length; i++) {
+            var idx = emptyCells[i];
+            board[idx] = isMaximizingPlayer ? PLAYER_O : PLAYER_X;
+
+            // Decrease depth by 1 each recursion level
+            var newDepth = (depth !== null && depth !== undefined) ? depth - 1 : null;
+            var result = minimax(board, newDepth, !isMaximizingPlayer);
+
+            board[idx] = ''; // undo move
+
+            if (isMaximizingPlayer) {
+                if (result.score > bestScore || bestIndex === -1) { bestScore = result.score; bestIndex = idx; }
+            } else {
+                if (result.score < bestScore || bestIndex === -1) { bestScore = result.score; bestIndex = idx; }
+            }
+        }
+
+        return { score: bestScore, index: bestIndex };
+    }
+
+    // --- AI Strategy Functions ---
+
+    function getEasyMove(board) {
+        var emptyCells = getEmptyCells(board);
+        if (emptyCells.length === 0) return -1;
+        return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    }
+
+    /** Medium: shallow minimax depth=2 + 20% random mistake injection */
+    function getMediumMove(board) {
+        var emptyCells = getEmptyCells(board);
+        if (emptyCells.length === 0) return -1;
+
+        // 20% chance to make a completely random move (simulates human error)
+        if (Math.random() < 0.2 && emptyCells.length > 1) {
+            return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
+
+        var result = minimax(board, 2, true);
+        return result.index;
+    }
+
+    /** Hard: full minimax (unbeatable) */
+    function getHardMove(board) {
+        var result = minimax(board, null, true);
+        return result.index;
+    }
+
+    // --- AI Dispatcher ---
+    function makeAIMove(board, difficulty) {
+        if (difficulty === 'easy') return getEasyMove(board);
+        else if (difficulty === 'medium') return getMediumMove(board);
+        else return getHardMove(board); // default to hard
+    }
+
+    // --- Game Logic & UI ---
+    function updateBoard() {
+        for (var i = 0; i < cells.length; i++) {
+            cells[i].textContent = currentBoard[i];
+        }
+    }
+
+    function setStatus(msg, type) {
+        statusDisplay.textContent = msg;
+        statusDisplay.className = "status " + type;
+    }
+
+    function handleGameOver() {
+        gameActive = false;
         var winner = checkWinner(currentBoard);
-        if (winner === PLAYER_O) return 10; // AI wins
-        if (winner === PLAYER_X) return -10; // Player X wins
-        return 0; // Draw or game still in progress
+        if (winner) setStatus(winner + " wins!", "winner");
+        else if (isBoardFull(currentBoard)) setStatus("It's a draw!", "draw");
     }
 
-    function minimax(currentBoard, depth, isMaximizingPlayer) {
-        var score = evaluate(currentBoard);
-
-        // Base cases: If game is over, return score adjusted by depth
-        if (score === 10) return score - depth; // AI wins: Prefer quicker wins
-        if (score === -10) return score + depth; // Player X wins: Prefer delaying loss
-        if (checkDraw(currentBoard)) return 0; // Draw
-
-        if (isMaximizingPlayer) { // AI's turn (PLAYER_O)
-            var best = -Infinity;
-            for (var i = 0; i < 9; i++) {
-                if (currentBoard[i] === EMPTY) {
-                    currentBoard[i] = PLAYER_O; // Make the move
-                    best = Math.max(best, minimax(currentBoard, depth + 1, false)); // Recurse for opponent
-                    currentBoard[i] = EMPTY; // Undo the move (backtrack)
-                }
-            }
-            return best;
-        } else { // Player X's turn (Minimizing player)
-            var best = Infinity;
-            for (var i = 0; i < 9; i++) {
-                if (currentBoard[i] === EMPTY) {
-                    currentBoard[i] = PLAYER_X; // Make the move
-                    best = Math.min(best, minimax(currentBoard, depth + 1, true)); // Recurse for AI
-                    currentBoard[i] = EMPTY; // Undo the move (backtrack)
-                }
-            }
-            return best;
-        }
+    function resetGame() {
+        currentBoard = Array(9).fill('');
+        gameActive = true;
+        updateBoard();
+        selectedDifficulty = difficultySelector.value || 'medium';
+        setStatus("Ready! Make your move.", "player-x-turn");
     }
 
-    function findBestMove(currentBoard) {
-        if (selectedDifficulty === 'easy') {
-            return aiMoveEasy(currentBoard);
-        } else if (selectedDifficulty === 'medium') {
-            return aiMoveMedium(currentBoard);
-        } else {
-            return aiMoveHard(currentBoard); // Hard/Expert: Full minimax
-        }
-    }
-
-    function aiMove() {
-        if (!isGameActive || currentPlayer !== PLAYER_O) return; // Ensure it's AI's turn and game is active
-        var bestMoveIndex = findBestMove(board);
-        if (bestMoveIndex !== -1) { // If a valid move is found
-            makeMove(bestMoveIndex, PLAYER_O);
-            checkGameStatus();
-        }
-    }
-
-    // Event Listeners
+    // --- Event Listeners & Init ---
     cells.forEach(function(cell) {
-        cell.addEventListener("click", handleCellClick);
-    });
-    resetButton.addEventListener("click", initializeGame);
+        cell.addEventListener('click', function() {
+            if (!gameActive || currentBoard[this.dataset.index] !== '') return;
 
-    // Initial game setup
-    initializeGame();
+            currentBoard[this.dataset.index] = PLAYER_X;
+            updateBoard();
+
+            if (checkWinner(currentBoard) || isBoardFull(currentBoard)) {
+                handleGameOver();
+                return;
+            }
+
+            // AI's turn with delay
+            setTimeout(function() {
+                if (!gameActive) return;
+                var aiMove = makeAIMove(currentBoard, selectedDifficulty);
+                if (aiMove !== -1 && currentBoard[aiMove] === '') {
+                    currentBoard[aiMove] = PLAYER_O;
+                    updateBoard();
+                    if (checkWinner(currentBoard) || isBoardFull(currentBoard)) {
+                        handleGameOver();
+                    }
+                }
+            }, 500);
+        });
+    });
+
+    difficultySelector.addEventListener('change', function() {
+        selectedDifficulty = this.value;
+        resetGame();
+    });
+
+    resetButton.addEventListener('click', resetGame);
+
+    // Start
+    resetGame();
 });
