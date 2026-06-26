@@ -4,11 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var board = Array(9).fill('');
     var currentPlayer = 'X';
     var isGameActive = true;
-    var selectedDifficulty = document.getElementById("difficulty-select").value || "medium";
-
-    var PLAYER_X = 'X';
-    var PLAYER_O = 'O';
-    var EMPTY = '';
+    var selectedDifficulty = document.getElementById("difficulty-select").value || "easy";
 
     // --- DOM Elements ---
     var cells = Array.from(document.querySelectorAll(".cell"));
@@ -26,15 +22,16 @@ document.addEventListener("DOMContentLoaded", function() {
     // --- Core Functions ---
 
     function renderBoard() {
-        cells.forEach(function(cell, index) {
-            cell.textContent = board[index];
+        for (var i = 0; i < cells.length; i++) {
+            var cell = cells[i];
+            cell.textContent = board[i];
             cell.classList.remove("player-x", "player-o");
-            if (board[index] === PLAYER_X) {
+            if (board[i] === 'X') {
                 cell.classList.add("player-x");
-            } else if (board[index] === PLAYER_O) {
+            } else if (board[i] === 'O') {
                 cell.classList.add("player-o");
             }
-        });
+        }
     }
 
     function updateStatus(message, type) {
@@ -42,21 +39,25 @@ document.addEventListener("DOMContentLoaded", function() {
         statusDisplay.className = "status " + type;
     }
 
-    // --- Player Move ---
+    // --- Player Move via click on cell by index (avoids `this` binding issues with arrow functions) ---
 
     cells.forEach(function(cell, index) {
-        cell.addEventListener("click", function() {
-            if (!isGameActive || board[index] !== EMPTY || currentPlayer === PLAYER_O) {
-                return;
-            }
-            makeMove(index, PLAYER_X);
-            checkGameStatus();
-
-            if (isGameActive && currentPlayer === PLAYER_O) {
-                setTimeout(aiMove, 400);
-            }
-        });
+        cell.addEventListener("click", function(idx) {
+            return function() { handlePlayerMove(idx); };
+        }(index));
     });
+
+    function handlePlayerMove(index) {
+        if (!isGameActive || board[index] !== '' || currentPlayer === 'O') {
+            return;
+        }
+        makeMove(index, 'X');
+        checkGameStatus();
+
+        if (isGameActive && currentPlayer === 'O') {
+            setTimeout(aiMove, 400);
+        }
+    }
 
     function makeMove(index, player) {
         board[index] = player;
@@ -66,13 +67,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // --- Game Status Checks ---
 
     function checkWinner(currentBoard) {
-        if (!currentBoard) currentBoard = board;
+        var target = currentBoard || board;
         for (var i = 0; i < winningConditions.length; i++) {
             var cond = winningConditions[i];
-            if (currentBoard[cond[0]] &&
-                currentBoard[cond[0]] === currentBoard[cond[1]] &&
-                currentBoard[cond[0]] === currentBoard[cond[2]]) {
-                return currentBoard[cond[0]];
+            if (target[cond[0]] &&
+                target[cond[0]] === target[cond[1]] &&
+                target[cond[0]] === target[cond[2]]) {
+                return target[cond[0]];
             }
         }
         return null;
@@ -80,11 +81,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function checkDraw(currentBoard) {
         var target = currentBoard || board;
-        return target.every(function(cell) { return cell !== EMPTY; }) && !checkWinner(target);
+        for (var i = 0; i < 9; i++) {
+            if (target[i] === '') return false;
+        }
+        return !checkWinner(target);
     }
 
     function switchPlayer() {
-        currentPlayer = (currentPlayer === PLAYER_X) ? PLAYER_O : PLAYER_X;
+        currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
     }
 
     function checkGameStatus() {
@@ -100,26 +104,26 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         switchPlayer();
-        var turnClass = currentPlayer === PLAYER_X ? "player-x-turn" : "player-o-turn";
+        var turnClass = currentPlayer === 'X' ? "player-x-turn" : "player-o-turn";
         updateStatus(currentPlayer + "'s turn", turnClass);
     }
 
     // --- AI: Easy (completely random) ---
 
-    function getEasyMove(currentBoard) {
+    function getEasyMove() {
         var available = [];
         for (var i = 0; i < 9; i++) {
-            if (currentBoard[i] === EMPTY) available.push(i);
+            if (board[i] === '') available.push(i);
         }
         return available[Math.floor(Math.random() * available.length)];
     }
 
     // --- AI: Medium (shallow minimax depth=2 + occasional mistakes) ---
 
-    function getMediumMove(currentBoard) {
+    function getMediumMove() {
         var emptyCells = [];
         for (var i = 0; i < 9; i++) {
-            if (currentBoard[i] === EMPTY) emptyCells.push(i);
+            if (board[i] === '') emptyCells.push(i);
         }
         // ~25% chance to make a random mistake
         if (Math.random() < 0.25 && emptyCells.length > 1) {
@@ -127,9 +131,9 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         var bestVal = -Infinity, bestMove = emptyCells[0];
         for (var i = 0; i < emptyCells.length; i++) {
-            currentBoard[i] = PLAYER_O;
-            var moveVal = minimax(currentBoard, 2, false);
-            currentBoard[i] = EMPTY;
+            board[i] = 'O';
+            var moveVal = minimax(board.slice(), 2, false);
+            board[i] = '';
             if (moveVal > bestVal) { bestVal = moveVal; bestMove = i; }
         }
         return bestMove;
@@ -137,13 +141,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // --- AI: Hard/Expert (full minimax — unbeatable) ---
 
-    function getHardMove(currentBoard) {
-        var bestVal = -Infinity, bestMove = -1;
+    function getHardMove() {
+        var bestVal = -Infinity, bestMove = 0;
         for (var i = 0; i < 9; i++) {
-            if (currentBoard[i] === EMPTY) {
-                currentBoard[i] = PLAYER_O;
-                var moveVal = minimax(currentBoard, 0, false);
-                currentBoard[i] = EMPTY;
+            if (board[i] === '') {
+                board[i] = 'O';
+                var moveVal = minimax(board.slice(), null, false);
+                board[i] = '';
                 if (moveVal > bestVal) { bestVal = moveVal; bestMove = i; }
             }
         }
@@ -154,15 +158,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function evaluate(currentBoard) {
         var winner = checkWinner(currentBoard);
-        if (winner === PLAYER_O) return 10;
-        if (winner === PLAYER_X) return -10;
+        if (winner === 'O') return 10;
+        if (winner === 'X') return -10;
         return 0;
     }
 
     /**
-     * @param {Array} board - current board state to evaluate recursively
+     * @param {Array} board - current board state to evaluate recursively (passed by copy)
      * @param {number|null} depthLeft - remaining depth budget; null = unlimited search
-     * @param {boolean} isMaximizing - true for AI (PLAYER_O), false for player X
+     * @param {boolean} isMaximizing - true for AI ('O'), false for player X
      */
     function minimax(board, depthLeft, isMaximizing) {
         var score = evaluate(board);
@@ -179,28 +183,28 @@ document.addEventListener("DOMContentLoaded", function() {
 
         var emptyCells = [];
         for (var i = 0; i < 9; i++) {
-            if (board[i] === EMPTY) emptyCells.push(i);
+            if (board[i] === '') emptyCells.push(i);
         }
 
-        if (isMaximizing) { // AI's turn
+        if (isMaximizing) { // AI's turn ('O')
             var bestVal = -Infinity;
             for (var i = 0; i < emptyCells.length; i++) {
-                board[emptyCells[i]] = PLAYER_O;
+                board[emptyCells[i]] = 'O';
                 var newVal = minimax(board,
                     (depthLeft !== null && depthLeft !== undefined) ? depthLeft - 1 : null,
                     false);
-                board[emptyCells[i]] = EMPTY;
+                board[emptyCells[i]] = '';
                 if (newVal > bestVal) bestVal = newVal;
             }
             return bestVal;
         } else { // Player X's turn
             var bestVal = Infinity;
             for (var i = 0; i < emptyCells.length; i++) {
-                board[emptyCells[i]] = PLAYER_X;
+                board[emptyCells[i]] = 'X';
                 var newVal = minimax(board,
                     (depthLeft !== null && depthLeft !== undefined) ? depthLeft - 1 : null,
                     true);
-                board[emptyCells[i]] = EMPTY;
+                board[emptyCells[i]] = '';
                 if (newVal < bestVal) bestVal = newVal;
             }
             return bestVal;
@@ -212,12 +216,12 @@ document.addEventListener("DOMContentLoaded", function() {
     function aiMove() {
         var moveIndex;
         switch (selectedDifficulty) {
-            case "easy":   moveIndex = getEasyMove(board); break;
-            case "medium": moveIndex = getMediumMove(board); break;
-            default:       moveIndex = getHardMove(board); break; // hard/expert
+            case "easy":   moveIndex = getEasyMove(); break;
+            case "medium": moveIndex = getMediumMove(); break;
+            default:       moveIndex = getHardMove(); break; // hard/expert
         }
-        if (moveIndex !== undefined && board[moveIndex] === EMPTY) {
-            makeMove(moveIndex, PLAYER_O);
+        if (board[moveIndex] === '') {
+            makeMove(moveIndex, 'O');
             checkGameStatus();
         }
     }
@@ -232,13 +236,13 @@ document.addEventListener("DOMContentLoaded", function() {
     resetButton.addEventListener("click", resetGame);
 
     function resetGame() {
-        board = Array(9).fill(EMPTY);
-        currentPlayer = PLAYER_X;
+        board = Array(9).fill('');
+        currentPlayer = 'X';
         isGameActive = true;
         renderBoard();
         updateStatus("Your turn (X)", "player-x-turn");
     }
 
-    // --- Start ---
+    // --- Start the game on page load ---
     resetGame();
 });
