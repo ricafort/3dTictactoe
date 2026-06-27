@@ -631,3 +631,23 @@
 [2026-06-27 11:39:15] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
 [2026-06-27 11:39:15] react_task completed: payload={'approved': True}
 [2026-06-27 11:39:15] React approval result: approved=True
+[2026-06-27 11:46:36] Awaiting approval for tool=replace_file_content, path=None, diff_future_active=False
+[2026-06-27 11:46:36] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-27 11:46:36] react_task completed: payload={'type': 'open_file', 'path': 'script.js'}
+[2026-06-27 11:46:36] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-27 11:46:36] react_task completed: payload={'type': 'open_file', 'path': 'script.js'}
+[2026-06-27 11:46:40] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-27 11:46:40] react_task completed: payload={'approved': True}
+[2026-06-27 11:46:40] React approval result: approved=True
+[2026-06-27 11:47:13] Awaiting approval for tool=write_file, path=None, diff_future_active=False
+[2026-06-27 11:47:13] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-27 11:47:13] react_task completed: payload={'type': 'open_file', 'path': 'script.js'}
+[2026-06-27 11:47:13] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-27 11:47:13] react_task completed: payload={'approved': True}
+[2026-06-27 11:47:13] React approval result: approved=True
+[2026-06-27 11:47:55] Awaiting approval for tool=replace_file_content, path=None, diff_future_active=False
+[2026-06-27 11:47:55] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-27 11:47:55] react_task completed: payload={'type': 'open_file', 'path': 'index.html'}
+[2026-06-27 11:47:55] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-27 11:47:55] react_task completed: payload={'approved': True}
+[2026-06-27 11:47:55] React approval result: approved=True
