@@ -364,11 +364,62 @@
 
     // Safety fallback: pick first available if nothing improved
     if (!bestMove || board[bestMove] !== '') {
-      bestMove = emptyCells[0];
     }
     return bestMove;
   }
 
+  // ============================================================
+  // CUBE FRAME OVERLAY (wireframe edges + face planes)
+  // ============================================================
+
+  function createCubeFrame() {
+    var frame = document.createElement('div');
+    frame.className = 'cube-frame';
+
+    var faces = [
+      { name: 'front',  transform: 'translateZ(135px)' },
+      { name: 'back',   transform: 'rotateY(180deg) translateZ(135px)' },
+      { name: 'top',    transform: 'rotateX(90deg) translateZ(135px)' },
+      { name: 'bottom', transform: 'rotateX(-90deg) translateZ(135px)' },
+      { name: 'left',   transform: 'rotateY(-90deg) translateZ(135px)' },
+      { name: 'right',  transform: 'rotateY(90deg) translateZ(135px)' }
+    ];
+
+    for (var f = 0; f < faces.length; f++) {
+      var plane = document.createElement('div');
+      plane.className = 'face-plane face-' + faces[f].name;
+      frame.appendChild(plane);
+    }
+
+    function addEdge(cls, tx, ty, tz) {
+      var el = document.createElement('div');
+      el.className = 'edge-line ' + cls;
+      el.style.transform = 'translateX('+(tx||0)+'px) translateY('+(ty||0)+'px) translateZ('+(tz||0)+'px)';
+      frame.appendChild(el);
+    }
+
+    var half = 135;
+    // Bottom face (4 edges, z=-half)
+    addEdge('edge-h', 0, -half, -half);
+    addEdge('edge-v', -half, 0, -half);
+    addEdge('edge-h', 0, half, -half);
+    addEdge('edge-v', half, 0, -half);
+    // Top face (4 edges, z=+half)
+    addEdge('edge-h', 0, -half, half);
+    addEdge('edge-v', -half, 0, half);
+    addEdge('edge-h', 0, half, half);
+    addEdge('edge-v', half, 0, half);
+    // Connecting edges (4 pillars along Z)
+    addEdge('edge-z', -half, -half, 0);
+    addEdge('edge-z', half, -half, 0);
+    addEdge('edge-z', -half, half, 0);
+    addEdge('edge-z', half, half, 0);
+
+    cubeElement.prepend(frame);
+  }
+
+  // ============================================================
+  // RENDERING
   // ============================================================
   // RENDERING
   // ============================================================
