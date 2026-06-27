@@ -5,7 +5,6 @@
 // ============================================================
 
 (function() {
-  'use strict';
 
   // --- Constants ---
   var SIZE = 3;
@@ -437,14 +436,11 @@
 
     // Position the block in 3D space (origin is center of the big cube)
     // FIX: compute translateZ value numerically FIRST, then concatenate as a plain number.
-    // The old code had 'translateZ((z - 1) * ' + STEP + 'px)' which produced invalid CSS
-    // like "translateZ((-0.5) * 78px)" — parentheses are literal text in JS strings,
-    // not evaluated math operations.
     var tzVal = (z - 1) * STEP;
     wrapper.style.transform =
-      'translateX(' + (x * STEP - CUBE_HALF) + 'px) ' +
-      'translateY(' + (-y * STEP + CUBE_HALF) + 'px) ' +
-      'translateZ(' + tzVal + 'px)';
+      'translateX(' + (x * STEP - CUBE_HALF) + 'px)' +
+      ' translateY(' + (-y * STEP + CUBE_HALF) + 'px)' +
+      ' translateZ(' + tzVal + 'px)';
     wrapper.style.transformStyle = 'preserve-3d';
 
     // --- Front face (the clickable X/O display surface) ---
