@@ -31,7 +31,11 @@
 
   // --- DOM References (populated on init) ---
   var statusDisplay, resetButton, difficultySelect, cubeElement;
-  var rotateXSlider, rotateYSlider;
+
+  // --- Drag state for rotation ---
+  var isDragging = false;
+  var dragStartX = 0, dragStartY = 0;
+  var rotationX = 30, rotationY = 45;   // current tilt angles (degrees)
 
   // ============================================================
   // INDEXING HELPERS
@@ -300,7 +304,7 @@
     var result = [];
     for (var i = 0; i < priorityOrder.length; i++) {
       if (emptyCells.indexOf(priorityOrder[i]) !== -1) {
-        result.push(priorityOrder[i]);
+        result.push(emptyCells[i]);
       }
     }
     for (var j = 0; j < emptyCells.length; j++) {
@@ -505,7 +509,11 @@
   // GAME FLOW
   // ============================================================
 
+  var wasDragging = false;   // track to distinguish click vs drag
+
   function handleCellClick(e) {
+    if (wasDragging) return; // ignore clicks that were actually drags
+    
     var block = e.target.closest('.block-wrapper');
     if (!block || !isGameActive || currentPlayer !== PLAYER_X) return;
 
@@ -577,13 +585,61 @@
   }
 
   // ============================================================
-  // ROTATION CONTROLS
+  // ROTATION CONTROLS — Mouse Drag & Touch Drag
   // ============================================================
 
-  function updateRotation() {
-    var rotateX = rotateXSlider ? rotateXSlider.value : 30;
-    var rotateY = rotateYSlider ? rotateYSlider.value : 45;
-    cubeElement.style.transform = 'rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
+  function applyRotation() {
+    cubeElement.style.transform = 'rotateX(' + rotationX + 'deg) rotateY(' + rotationY + 'deg)';
+  }
+
+  function onPointerDown(e) {
+    wasDragging = false;
+    dragStartX = e.clientX !== undefined ? e.clientX : e.touches[0].clientX;
+    dragStartY = e.clientY !== undefined ? e.clientY : e.touches[0].clientY;
+
+    document.addEventListener('mousemove', onPointerMove);
+    document.addEventListener('mouseup', onPointerUp);
+  }
+
+  function onPointerMove(e) {
+    var clientX, clientY;
+    if (e.clientX !== undefined) {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    } else {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    }
+
+    var dx = clientX - dragStartX;
+    var dy = clientY - dragStartY;
+
+    // Drag threshold: only count as drag after 3px movement
+    if (!wasDragging && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+      wasDragging = true;
+      cubeElement.style.cursor = 'grabbing';
+    }
+
+    if (wasDragging) {
+      rotationY += dx * 0.4;   // horizontal drag -> Y-axis rotation
+      rotationX -= dy * 0.4;   // vertical drag   -> X-axis rotation
+
+      // Clamp to avoid near-gimbal-lock extremes
+      if (rotationX > 85) rotationX = 85;
+      if (rotationX < -85) rotationX = -85;
+
+      applyRotation();
+
+      dragStartX = clientX;
+      dragStartY = clientY;
+    }
+  }
+
+  function onPointerUp() {
+    wasDragging = false;
+    cubeElement.style.cursor = 'grab';
+    document.removeEventListener('mousemove', onPointerMove);
+    document.removeEventListener('mouseup', onPointerUp);
   }
 
   // ============================================================
@@ -595,22 +651,19 @@
     resetButton = document.getElementById('reset-btn');
     difficultySelect = document.getElementById('difficulty-select');
     cubeElement = document.getElementById('tic-tac-toe-cube');
-    rotateXSlider = document.getElementById('rotateX-slider');
-    rotateYSlider = document.getElementById('rotateY-slider');
 
     // Generate winning lines once at start
     winningLines = generateWinningLines(); // Frame is created in renderBoard
 
-    // Set initial rotation
-    updateRotation();
+    // Set initial rotation via drag handlers (not sliders)
+    applyRotation();
 
-    // Event listeners for rotation sliders
-    if (rotateXSlider) {
-      rotateXSlider.addEventListener('input', updateRotation);
-    }
-    if (rotateYSlider) {
-      rotateYSlider.addEventListener('input', updateRotation);
-    }
+    // --- Attach mouse/touch drag listeners to the cube ---
+    cubeElement.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('touchstart', onPointerDown, { passive: true });
+
+    // Set cursor hint
+    cubeElement.style.cursor = 'grab';
 
     // Difficulty selector
     difficultySelect.addEventListener('change', function() {
