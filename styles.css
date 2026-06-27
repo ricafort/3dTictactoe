@@ -102,7 +102,7 @@ select {
   cursor: grab;
 }
 
-/* --- 3D Board --- */
+/* --- 3D Board Container --- */
 .board-3d-container {
   width: 420px;
   height: 420px;
@@ -113,6 +113,7 @@ select {
   align-items: center;
 }
 
+/* The main cube wrapper — holds layers + frame */
 .cube {
   width: 270px;
   height: 270px;
@@ -121,10 +122,10 @@ select {
   transition: transform 0.15s ease-out;
 }
 
+/* --- Individual Layers (the 3 grid planes) --- */
 .layer {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 50%; left: 50%;
   display: grid;
   grid-template-columns: repeat(3, 80px);
   grid-template-rows: repeat(3, 80px);
@@ -172,7 +173,50 @@ select {
   box-shadow: 0 0 20px rgba(16, 185, 129, 0.7);
 }
 
-/* --- Reset Button --- */
+/* ============================================================ */
+/*                   CUBE FRAME OVERLAY                           */
+/* ============================================================ */
+
+.cube-frame {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+/* --- 6 semi-transparent face planes --- */
+.face-plane {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 270px; height: 270px;
+  margin-left: -135px; margin-top: -135px;
+  background: rgba(139, 92, 246, 0.04);
+  border: none;
+  transform-style: preserve-3d;
+}
+
+.face-front  { transform: translateZ(135px); }
+.face-back   { transform: rotateY(180deg) translateZ(135px); }
+.face-top    { transform: rotateX(90deg) translateZ(135px); }
+.face-bottom { transform: rotateX(-90deg) translateZ(135px); }
+.face-left   { transform: rotateY(-90deg) translateZ(135px); }
+.face-right  { transform: rotateY(90deg) translateZ(135px); }
+
+/* --- Wireframe edge lines (12 edges of the cube) --- */
+.edge-line {
+  position: absolute;
+  background: rgba(139, 92, 246, 0.4);
+  transform-style: preserve-3d;
+}
+
+/* Horizontal edges in XY planes — full width */
+.edge-h { height: 2px; width: 270px; }
+/* Vertical edges in XY planes — full height */
+.edge-v { width: 2px; height: 270px; }
+/* Depth edges (along Z) — drawn as thin lines at corners */
+.edge-z { width: 2px; height: 2px; }
+
 #reset-btn {
   background: var(--brand-color);
   color: white;
@@ -198,7 +242,15 @@ select {
   .game-container { padding: 1.2rem; }
   h1 { font-size: 1.6rem; }
   .board-3d-container { width: 300px; height: 300px; perspective: 900px; }
-  .cube { width: 200px; height: 200px; }
+  .cube {
+    width: 200px;
+    height: 200px;
+  }
+  /* Override for responsive frame size */
+  .face-plane { width: 200px; height: 200px; margin-left: -100px; margin-top: -100px; }
+  .edge-h     { width: 200px; }
+  .edge-v     { height: 200px; }
+
   .layer {
     grid-template-columns: repeat(3, 56px);
     grid-template-rows: repeat(3, 56px);
