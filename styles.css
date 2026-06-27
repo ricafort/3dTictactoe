@@ -107,7 +107,7 @@ select {
 /* ============================================================ */
 
 .board-3d-container {
-  width: 480px;
+  width: 480px; /* Ample space for the cube + perspective */
   height: 480px;
   perspective: 1600px;
   margin: 0 auto 1.5rem auto;
@@ -118,8 +118,8 @@ select {
 
 /* The main cube wrapper — holds blocks + frame */
 .cube {
-  width: <NRP>; /* CUBE_SIDE from JS */
-  height: <NRP>; /* CUBE_SIDE from JS */
+  width: 224px; /* CUBE_SIDE from JS */
+  height: 224px; /* CUBE_SIDE from JS */
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.15s ease-out;
@@ -134,6 +134,7 @@ select {
   width: 68px; /* CELL_SIZE from JS */
   height: 68px; /* CELL_SIZE from JS */
   cursor: pointer;
+  transform-style: preserve-3d; /* Needed for faces to be 3D children */
   transition: transform 0.2s ease-out, filter 0.25s ease;
 }
 
@@ -161,7 +162,7 @@ select {
   margin-left: -34px; /* -CELL_SIZE/2 */
   margin-top: -34px;  /* -CELL_SIZE/2 */
   border-radius: 10px;
-  transform-style: preserve-3d;
+  backface-visibility: hidden; /* Hide back faces */
 }
 
 /* Front face — the main clickable display surface */
@@ -216,7 +217,7 @@ select {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  pointer-events: none;
+  pointer-events: none; /* Allow clicks to pass through to blocks */
   transform-style: preserve-3d;
 }
 
@@ -224,11 +225,11 @@ select {
 .face-plane {
   position: absolute;
   top: 50%; left: 50%;
-  width: <NRP>; /* CUBE_SIDE from JS */
-  height: <NRP>; /* CUBE_SIDE from JS */
+  width: 224px; /* CUBE_SIDE from JS */
+  height: 224px; /* CUBE_SIDE from JS */
   margin-left: -112px; /* -CUBE_HALF from JS */
   margin-top: -112px;  /* -CUBE_HALF from JS */
-  background: rgba(139, <DATE_TIME>, 246, 0.05);
+  background: rgba(139, <DATE_TIME>, 246, 0.05); /* Very subtle purple tint */
   border: none;
   transform-style: preserve-3d;
 }
@@ -243,14 +244,14 @@ select {
 /* --- Wireframe edge lines (12 edges of the cube) --- */
 .edge-line {
   position: absolute;
-  background: rgba(139, <DATE_TIME>, 246, 0.5);
+  background: rgba(139, <DATE_TIME>, 246, 0.5); /* Semi-transparent purple */
   transform-style: preserve-3d;
 }
 
 /* Horizontal edges in XY planes - full width */
-.edge-h { height: 3px; width: <NRP>; } /* CUBE_SIDE */
+.edge-h { height: 3px; width: 224px; } /* CUBE_SIDE */
 /* Vertical edges in XY planes - full height */
-.edge-v { width: 3px; height: <NRP>; } /* CUBE_SIDE */
+.edge-v { width: 3px; height: 224px; } /* CUBE_SIDE */
 /* Depth edges (along Z) - drawn as thin lines at corners */
 .edge-z { width: 3px; height: 3px; background: rgba(167, <DATE_TIME>, 250, 0.8); }
 
@@ -281,8 +282,8 @@ select {
   .board-3d-container { width: 340px; height: 340px; perspective: 900px; }
 
   .cube {
-    width: <NRP>;  /* Mobile CUBE_SIDE: 158px */
-    height: <NRP>; /* Mobile CUBE_SIDE: 158px */
+    width: 158px;  /* Mobile CUBE_SIDE */
+    height: 158px; /* Mobile CUBE_SIDE */
   }
 
   /* Adjust block size for mobile */
@@ -291,9 +292,13 @@ select {
 
   /* Cube frame faces (mobile) */
   .face-plane {
-    width: <NRP>;  /* Mobile CUBE_SIDE: 158px */
-    height: <NRP>; /* Mobile CUBE_SIDE: 158px */
-    margin-left: -79px; /* Mobile CUBE_HALF: 79px */
-    margin-top: -79px;  /* Mobile CUBE_HALF: 79px */
+    width: 158px;  /* Mobile CUBE_SIDE */
+    height: 158px; /* Mobile CUBE_SIDE */
+    margin-left: -79px; /* Mobile CUBE_HALF */
+    margin-top: -79px;  /* Mobile CUBE_HALF */
   }
+
+  /* Mobile wireframe edges */
+  .edge-h { width: 158px; } /* Mobile CUBE_SIDE */
+  .edge-v { height: 158px; } /* Mobile CUBE_SIDE */
 }
