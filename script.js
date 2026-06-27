@@ -11,33 +11,17 @@
   var TOTAL_CELLS = SIZE * SIZE * SIZE; // 27
   var PLAYER_X = 'X';
   var PLAYER_O = 'O';
+
   // Cell block dimensions (used in rendering)
   var CELL_SIZE = 68;
   var GAP = 10;
   var STEP = CELL_SIZE + GAP; // center-to-center step between blocks
+  
   // Total edge length of the big cube (must match CSS .cube, .face-plane, .edge-h/v)
   var CUBE_SIDE = 224;
   // Half-edge used for frame positioning and block offsets (must match CSS .face-plane margin/translateZ)
   var CUBE_HALF = 112;
 
-  // --- Game State ---
-  var board = new Array(TOTAL_CELLS).fill('');
-=======
-var CELL_SIZE = 68;
-var GAP = 10;
-var STEP = CELL_SIZE + GAP;   // center-to-center step between blocks
-// Total edge length of the big cube: SIZE cells * STEP minus one gap
-var CUBE_SIDE = SIZE * STEP - GAP;   // ~224px
-// Half-edge used for frame positioning and block offsets (centered origin)
-var CUBE_HALF = Math.round(SIZE * STEP / 2);   // ~117px
-++
-var CELL_SIZE = 68;
-var GAP = 10;
-var STEP = CELL_SIZE + GAP; // center-to-center step between blocks
-// Total edge length of the big cube (must match CSS .cube, .face-plane, .edge-h/v)
-var CUBE_SIDE = 224;
-// Half-edge used for frame positioning and block offsets (must match CSS .face-plane margin/translateZ)
-var CUBE_HALF = 112;
   // --- Game State ---
   var board = new Array(TOTAL_CELLS).fill('');
   var currentPlayer = PLAYER_X;
@@ -309,9 +293,9 @@ var CUBE_HALF = 112;
   // --- Move ordering helper: prioritize center, then corners, then edges ---
   function prioritizeMoves(emptyCells) {
     var priorityOrder = [
-      13,
-      0, 2, 6, 8, 18, 20, 24, 26,
-      1, 3, 4, 5, 7, 9, 10, 11, 12, 14, 15, 16, 17, 19, 21, 22, 23
+      13, // Center
+      0, 2, 6, 8, 18, 20, 24, 26, // Corners
+      1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25 // Edges
     ];
     var result = [];
     for (var i = 0; i < priorityOrder.length; i++) {
@@ -421,15 +405,15 @@ var CUBE_HALF = 112;
 
     var half = CUBE_HALF;
     // Bottom face (4 edges, z=-half)
-    addEdge('edge-h', 0, -half, -half);
-    addEdge('edge-v', -half, 0, -half);
-    addEdge('edge-h', 0, half, -half);
-    addEdge('edge-v', half, 0, -half);
+    addEdge('edge-h', -half, -half, -half);
+    addEdge('edge-v', -half, -half, -half);
+    addEdge('edge-h', half, -half, -half);
+    addEdge('edge-v', half, -half, -half);
     // Top face (4 edges, z=+half)
-    addEdge('edge-h', 0, -half, half);
-    addEdge('edge-v', -half, 0, half);
-    addEdge('edge-h', 0, half, half);
-    addEdge('edge-v', half, 0, half);
+    addEdge('edge-h', -half, half, half);
+    addEdge('edge-v', -half, half, half);
+    addEdge('edge-h', half, half, half);
+    addEdge('edge-v', half, half, half);
     // Connecting edges (4 pillars along Z)
     addEdge('edge-z', -half, -half, 0);
     addEdge('edge-z', half, -half, 0);
@@ -452,19 +436,20 @@ var CUBE_HALF = 112;
     wrapper.dataset.index = xyzToIndex(x, y, z);
 
     // Position the block in 3D space (origin is center of the big cube)
-    // FIX: compute translateZ value numerically FIRST, then concatenate as a plain number.
-    var tzVal = (z - 1) * STEP;
+    var txVal = x * STEP - CUBE_HALF;
+    var tyVal = -y * STEP + CUBE_HALF; // Y-axis inverted for screen coordinates (0 at top)
+    var tzVal = (z - 1) * STEP;         // Z-axis layers: -STEP, 0, +STEP
+    
     wrapper.style.transform =
-      'translateX(' + (x * STEP - CUBE_HALF) + 'px)' +
-      ' translateY(' + (-y * STEP + CUBE_HALF) + 'px)' +
+      'translateX(' + txVal + 'px)' +
+      ' translateY(' + tyVal + 'px)' +
       ' translateZ(' + tzVal + 'px)';
     wrapper.style.transformStyle = 'preserve-3d';
 
     // --- Front face (the clickable X/O display surface) ---
     var frontFace = document.createElement('div');
     frontFace.className = 'block-face block-front';
-    frontFace.innerHTML = '&nbsp;';
-    // Push the front face to the +Z side so it's visible
+    frontFace.innerHTML = '&nbsp;'; // Placeholder for X/O
     frontFace.style.transform = 'translateZ(' + (half) + 'px)';
 
     // --- Top face ---
@@ -487,10 +472,7 @@ var CUBE_HALF = 112;
   }
 
   function renderBoard() {
-    cubeElement.innerHTML = '';
-    // Clear the frame and re-create it with new dimensions.
-    var oldFrame = cubeElement.querySelector('.cube-frame');
-    if (oldFrame) oldFrame.remove();
+    cubeElement.innerHTML = ''; // Clear existing blocks and frame
 
     for (var z = 0; z < SIZE; z++) {
       for (var y = 0; y < SIZE; y++) {
@@ -498,19 +480,20 @@ var CUBE_HALF = 112;
           var index = xyzToIndex(x, y, z);
           var block = buildBlock(x, y, z);
 
-          // Mark occupied cells
+          // Mark occupied cells and add 'occupied' class to wrapper
           if (board[index] === PLAYER_X) {
             block.querySelector('.block-front').classList.add('player-x');
+            block.classList.add('occupied');
           } else if (board[index] === PLAYER_O) {
             block.querySelector('.block-front').classList.add('player-o');
+            block.classList.add('occupied');
           }
 
           cubeElement.appendChild(block);
         }
       }
     }
-
-    createCubeFrame();
+    createCubeFrame(); // Re-add the frame after blocks
   }
 
   function updateStatus(message, type) {
@@ -527,7 +510,7 @@ var CUBE_HALF = 112;
     if (!block || !isGameActive || currentPlayer !== PLAYER_X) return;
 
     var index = parseInt(block.dataset.index, 10);
-    if (board[index] !== '') return;
+    if (board[index] !== '') return; // Cell already occupied
 
     makeMove(index, PLAYER_X);
     checkGameStatus();
@@ -539,7 +522,7 @@ var CUBE_HALF = 112;
 
   function makeMove(index, player) {
     board[index] = player;
-    renderBoard();
+    renderBoard(); // Re-render the entire board after a move
   }
 
   function checkGameStatus() {
@@ -564,8 +547,8 @@ var CUBE_HALF = 112;
     var line = getWinningLine();
     if (!line) return;
 
-    // Re-render with winning blocks highlighted.
-    renderBoard();
+    // Re-render the board first to ensure all elements are fresh
+    renderBoard(); 
 
     for (var w = 0; w < line.length; w++) {
       var idx = line[w];
@@ -616,8 +599,7 @@ var CUBE_HALF = 112;
     rotateYSlider = document.getElementById('rotateY-slider');
 
     // Generate winning lines once at start
-    createCubeFrame();
-    winningLines = generateWinningLines();
+    winningLines = generateWinningLines(); // Frame is created in renderBoard
 
     // Set initial rotation
     updateRotation();
@@ -647,7 +629,7 @@ var CUBE_HALF = 112;
     board = new Array(TOTAL_CELLS).fill('');
     currentPlayer = PLAYER_X;
     isGameActive = true;
-    renderBoard();
+    renderBoard(); // Initial render and frame creation
     updateStatus("Your turn (X)", 'player-x-turn');
   }
 
