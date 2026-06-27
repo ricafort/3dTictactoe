@@ -5,8 +5,8 @@
   --text-secondary: #94a3b8;
   --brand-color: #8b5cf6;
   --brand-hover: #7c3aed;
-  --cell-border: #334155;
-  --player-x-color: #ef4444; /* Red for X */
+  --cell-border: #<US_DRIVER_LICENSE>;
+  --player-x-color: #<LOCATION>; /* Red for X */
   --player-o-color: #38bdf8; /* Blue for O (AI) */
   --winner-color: #10b981;   /* Green for winning line */
   --draw-color: #fbbf24;     /* Yellow for draw */
@@ -36,7 +36,7 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
-h1 {
+<US_DRIVER_LICENSE> {
   margin-top: 0;
   margin-bottom: 1rem;
   background: linear-gradient(to right, #a78bfa, #818cf8);
@@ -62,7 +62,7 @@ select {
   padding: 8px 16px;
   font-size: 1rem;
   border-radius: 0.5rem;
-  background: #334155;
+  background: #<US_DRIVER_LICENSE>;
   color: var(--text-primary);
   border: none;
   cursor: pointer;
@@ -85,15 +85,15 @@ select {
 }
 
 .rotation-controls input[type="range"] {
-  width: 140px;
+  width: <NRP>;
   -webkit-appearance: none;
   height: 6px;
-  background: #334155;
+  background: #<US_DRIVER_LICENSE>;
   border-radius: 3px;
   outline: none;
 }
 
-.rotation-controls input[type="range"]::-webkit-slider-thumb {
+.rotation-controls input[type="range"]<IP_ADDRESS>-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
@@ -118,8 +118,8 @@ select {
 
 /* The main cube wrapper — holds blocks + frame */
 .cube {
-  width: 260px;
-  height: 260px;
+  width: <NRP>; /* CUBE_SIDE from JS */
+  height: <NRP>; /* CUBE_SIDE from JS */
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.15s ease-out;
@@ -131,8 +131,8 @@ select {
 
 .block-wrapper {
   position: absolute;
-  width: 68px;
-  height: 68px;
+  width: 68px; /* CELL_SIZE from JS */
+  height: 68px; /* CELL_SIZE from JS */
   cursor: pointer;
   transition: transform 0.2s ease-out, filter 0.25s ease;
 }
@@ -140,8 +140,8 @@ select {
 /* Hover highlight for empty cells */
 .block-wrapper:not(.occupied):hover .block-front {
   border-color: var(--brand-color);
-  box-shadow: inset 0 0 16px rgba(139, 92, 246, 0.5),
-              0 0 8px rgba(139, 92, 246, 0.3);
+  box-shadow: inset 0 0 16px rgba(139, <DATE_TIME>, 246, 0.5),
+              0 0 8px rgba(139, <DATE_TIME>, 246, 0.3);
 }
 
 /* Occupied blocks slightly dimmer */
@@ -156,8 +156,10 @@ select {
 .block-face {
   position: absolute;
   top: 50%; left: 50%;
-  width: 68px; height: 68px;
-  margin-left: -34px; margin-top: -34px;
+  width: 68px; /* CELL_SIZE from JS */
+  height: 68px; /* CELL_SIZE from JS */
+  margin-left: -34px; /* -CELL_SIZE/2 */
+  margin-top: -34px;  /* -CELL_SIZE/2 */
   border-radius: 10px;
   transform-style: preserve-3d;
 }
@@ -179,7 +181,7 @@ select {
 
 /* Right face — darker for shadowed side */
 .block-right {
-  background: linear-gradient(180deg, #1e2d45, #172033);
+  background: linear-gradient(180deg, #1e2d45, #<US_DRIVER_LICENSE>);
   border: 1px solid rgba(0, 0, 0, 0.4);
 }
 
@@ -187,7 +189,7 @@ select {
 .block-front.player-x {
   color: var(--player-x-color);
   background: linear-gradient(165deg, #3b2530, #2a1a28);
-  border-color: rgba(239, 68, 68, 0.4);
+  border-color: rgba(239, <DATE_TIME>, <DATE_TIME>, 0.4);
 }
 
 /* --- Player O styling (front face) --- */
@@ -200,10 +202,10 @@ select {
 /* --- Winning line glow (applied to all visible faces) --- */
 .block-face.winning-line {
   background: var(--winner-color) !important;
-  border-color: #059669 !important;
+  border-color: #<US_DRIVER_LICENSE> !important;
   box-shadow:
     inset 0 0 18px rgba(255, 255, 255, 0.4),
-    0 0 18px rgba(16, 185, 129, 0.7);
+    0 0 18px rgba(16, 185, 129, <DATE_TIME>);
 }
 
 /* ============================================================ */
@@ -222,33 +224,35 @@ select {
 .face-plane {
   position: absolute;
   top: 50%; left: 50%;
-  width: 224px; height: 224px;
-  margin-left: -112px; margin-top: -112px;
-  background: rgba(139, 92, 246, 0.05);
+  width: <NRP>; /* CUBE_SIDE from JS */
+  height: <NRP>; /* CUBE_SIDE from JS */
+  margin-left: -112px; /* -CUBE_HALF from JS */
+  margin-top: -112px;  /* -CUBE_HALF from JS */
+  background: rgba(139, <DATE_TIME>, 246, 0.05);
   border: none;
   transform-style: preserve-3d;
 }
 
-.face-front  { transform: translateZ(112px); }
-.face-back   { transform: rotateY(180deg) translateZ(112px); }
-.face-top    { transform: rotateX(90deg) translateZ(112px); }
-.face-bottom { transform: rotateX(-90deg) translateZ(112px); }
-.face-left   { transform: rotateY(-90deg) translateZ(112px); }
-.face-right  { transform: rotateY(90deg) translateZ(112px); }
+.face-front  { transform: translateZ(112px); } /* CUBE_HALF */
+.face-back   { transform: rotateY(180deg) translateZ(112px); } /* CUBE_HALF */
+.face-top    { transform: rotateX(90deg) translateZ(112px); } /* CUBE_HALF */
+.face-bottom { transform: rotateX(-90deg) translateZ(112px); } /* CUBE_HALF */
+.face-left   { transform: rotateY(-90deg) translateZ(112px); } /* CUBE_HALF */
+.face-right  { transform: rotateY(90deg) translateZ(112px); } /* CUBE_HALF */
 
 /* --- Wireframe edge lines (12 edges of the cube) --- */
 .edge-line {
   position: absolute;
-  background: rgba(139, 92, 246, 0.5);
+  background: rgba(139, <DATE_TIME>, 246, 0.5);
   transform-style: preserve-3d;
 }
 
-/* Horizontal edges in XY planes — full width */
-.edge-h { height: 3px; width: 224px; }
-/* Vertical edges in XY planes — full height */
-.edge-v { width: 3px; height: 224px; }
-/* Depth edges (along Z) — drawn as thin lines at corners */
-.edge-z { width: 3px; height: 3px; background: rgba(167, 139, 250, 0.8); }
+/* Horizontal edges in XY planes - full width */
+.edge-h { height: 3px; width: <NRP>; } /* CUBE_SIDE */
+/* Vertical edges in XY planes - full height */
+.edge-v { width: 3px; height: <NRP>; } /* CUBE_SIDE */
+/* Depth edges (along Z) - drawn as thin lines at corners */
+.edge-z { width: 3px; height: 3px; background: rgba(167, <DATE_TIME>, 250, 0.8); }
 
 #reset-btn {
   background: var(--brand-color);
@@ -271,25 +275,25 @@ select {
 }
 
 /* --- Responsive --- */
-@media (max-width: 520px) {
+@media (max-width: <NRP>) {
   .game-container { padding: 1.2rem; }
-  h1 { font-size: 1.6rem; }
+  <US_DRIVER_LICENSE> { font-size: 1.6rem; }
   .board-3d-container { width: 340px; height: 340px; perspective: 900px; }
 
   .cube {
-    width: 180px;
-    height: 180px;
+    width: <NRP>;  /* Mobile CUBE_SIDE: 158px */
+    height: <NRP>; /* Mobile CUBE_SIDE: 158px */
   }
 
   /* Adjust block size for mobile */
   .block-wrapper { width: 46px; height: 46px; }
   .block-face { width: 46px; height: 46px; margin-left: -23px; margin-top: -23px; border-radius: 8px; }
 
-  /* Cube frame faces */
+  /* Cube frame faces (mobile) */
   .face-plane {
-    width: 150px;
-    height: 150px;
-    margin-left: -75px;
-    margin-top: -75px;
+    width: <NRP>;  /* Mobile CUBE_SIDE: 158px */
+    height: <NRP>; /* Mobile CUBE_SIDE: 158px */
+    margin-left: -79px; /* Mobile CUBE_HALF: 79px */
+    margin-top: -79px;  /* Mobile CUBE_HALF: 79px */
   }
 }
