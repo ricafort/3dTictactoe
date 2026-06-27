@@ -367,24 +367,29 @@
 
       if (moveVal >= 10) return cell;
 
-      if (moveVal > bestVal) { bestVal = moveVal; bestMove = cell; }
-    }
 
-    if (!bestMove || board[bestMove] !== '') {
-      bestMove = emptyCells[0];
-    }
-    return bestMove;
+    var half = CUBE_HALF;
+    // Bottom face (4 edges, z=-half)
+    addEdge('edge-h', 0, -half, -half); // Bottom-Front
+    addEdge('edge-h', 0, -half, half);  // Bottom-Back
+    addEdge('edge-v', -half, 0, -half); // Bottom-Left
+    addEdge('edge-v', half, 0, -half);  // Bottom-Right
+
+    // Top face (4 edges, z=+half)
+    addEdge('edge-h', 0, half, -half);  // Top-Front
+    addEdge('edge-h', 0, half, half);   // Top-Back
+    addEdge('edge-v', -half, 0, half);  // Top-Left
+    addEdge('edge-v', half, 0, half);   // Top-Right
+
+    // Connecting edges (4 pillars along Z)
+    addEdge('edge-z', -half, -half, 0); // Front-Left
+    addEdge('edge-z', half, -half, 0);  // Front-Right
+    addEdge('edge-z', -half, half, 0);  // Back-Left
+    addEdge('edge-z', half, half, 0);   // Back-Right
+
+    cubeElement.prepend(frame);
   }
-
-  // ============================================================
-  // CUBE FRAME OVERLAY (wireframe edges + face planes)
-  // Uses the computed cube dimensions so frame matches blocks.
-  // ============================================================
-
-  function createCubeFrame() {
-    var frame = document.createElement('div');
-    frame.className = 'cube-frame';
-
+<<<<<<< END
     var faces = [
       { name: 'front',  transform: 'translateZ(' + CUBE_HALF + 'px)' },
       { name: 'back',   transform: 'rotateY(180deg) translateZ(' + CUBE_HALF + 'px)' },
