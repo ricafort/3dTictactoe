@@ -1,16 +1,26 @@
 // ============================================================
 // 3D Tic-Tac-Toe — Full Game Logic
-// Board: 3×3×3 = 27 cells, indexed as z*9 + y*3 + x
+// Board: 3x3x3 = 27 cells, indexed as z*9 + y*3 + x
 // Winning lines: 49 total (rows + columns + pillars + face diags + space diags)
 // ============================================================
 
 (function() {
+  'use strict';
+
   // --- Constants ---
   var SIZE = 3;
   var TOTAL_CELLS = SIZE * SIZE * SIZE; // 27
   var PLAYER_X = 'X';
-  var PLAYER_O = 'O'; // AI
-  var CUBE_HALF = 135; // Half-size of cube for frame positioning (matches CSS)
+  var PLAYER_O = 'O';
+
+  // Cell block dimensions (used in rendering)
+  var CELL_SIZE = 68;
+  var GAP = 10;
+  var STEP = CELL_SIZE + GAP;   // center-to-center step between blocks
+  // Total edge length of the big cube: SIZE cells * STEP minus one gap
+  var CUBE_SIDE = SIZE * STEP - GAP;   // ~224px
+  // Half-edge used for frame positioning and block offsets (centered origin)
+  var CUBE_HALF = Math.round(SIZE * STEP / 2);   // ~117px
 
   // --- Game State ---
   var board = new Array(TOTAL_CELLS).fill('');
@@ -46,7 +56,7 @@
   function generateWinningLines() {
     var lines = [];
 
-    // --- Rows (along X axis): fixed y, fixed z, varying x → 3×3 = 9 ---
+    // --- Rows (along X axis): fixed y, fixed z, varying x -> 3x3 = 9 ---
     for (var z = 0; z < SIZE; z++) {
       for (var y = 0; y < SIZE; y++) {
         lines.push([
@@ -57,7 +67,7 @@
       }
     }
 
-    // --- Columns (along Y axis): fixed x, fixed z, varying y → 3×3 = 9 ---
+    // --- Columns (along Y axis): fixed x, fixed z, varying y -> 3x3 = 9 ---
     for (var z = 0; z < SIZE; z++) {
       for (var x = 0; x < SIZE; x++) {
         lines.push([
@@ -68,7 +78,7 @@
       }
     }
 
-    // --- Pillars (along Z axis): fixed x, fixed y, varying z → 3×3 = 9 ---
+    // --- Pillars (along Z axis): fixed x, fixed y, varying z -> 3x3 = 9 ---
     for (var y = 0; y < SIZE; y++) {
       for (var x = 0; x < SIZE; x++) {
         lines.push([
@@ -79,7 +89,7 @@
       }
     }
 
-    // --- Face Diagonals in XY planes (fixed z): 2 per layer × 3 = 6 ---
+    // --- Face Diagonals in XY planes (fixed z): 2 per layer x 3 = 6 ---
     for (var z = 0; z < SIZE; z++) {
       lines.push([
         xyzToIndex(0, 0, z),
@@ -93,7 +103,7 @@
       ]);
     }
 
-    // --- Face Diagonals in XZ planes (fixed y): 2 per slice × 3 = 6 ---
+    // --- Face Diagonals in XZ planes (fixed y): 2 per slice x 3 = 6 ---
     for (var y = 0; y < SIZE; y++) {
       lines.push([
         xyzToIndex(0, y, 0),
@@ -107,7 +117,7 @@
       ]);
     }
 
-    // --- Face Diagonals in YZ planes (fixed x): 2 per column × 3 = 6 ---
+    // --- Face Diagonals in YZ planes (fixed x): 2 per column x 3 = 6 ---
     for (var x = 0; x < SIZE; x++) {
       lines.push([
         xyzToIndex(x, 0, 0),
@@ -198,9 +208,9 @@
         else if (currentBoard[line[j]] === PLAYER_O) oCount++;
         else emptyCount++;
       }
-      // AI (O) building lines → positive score
+      // AI (O) building lines -> positive score
       if (oCount > 0 && emptyCount > 0) score += oCount * 10;
-      // Player X building lines → negative score (block these)
+      // Player X building lines -> negative score (block these)
       if (xCount > 0 && emptyCount > 0) score -= xCount * 8;
     }
     return score;
@@ -227,7 +237,7 @@
     // Draw
     if (isBoardFull(currentBoard)) return 0;
 
-    // Depth limit reached → use heuristic
+    // Depth limit reached -> use heuristic
     if (depthLeft !== null && depthLeft !== undefined && depthLeft <= 0) {
       return heuristicEvaluate(currentBoard.slice());
     }
@@ -364,6 +374,7 @@
 
   // ============================================================
   // CUBE FRAME OVERLAY (wireframe edges + face planes)
+  // Uses the computed cube dimensions so frame matches blocks.
   // ============================================================
 
   function createCubeFrame() {
@@ -413,33 +424,80 @@
   }
 
   // ============================================================
-  // RENDERING
+  // RENDERING — each cell becomes a small 3D block with visible faces.
+  // The blocks are positioned in true 3D space forming the larger cube.
   // ============================================================
+
+  function buildBlock(x, y, z) {
+    var half = CELL_SIZE / 2;
+
+    var wrapper = document.createElement('div');
+    wrapper.className = 'block-wrapper';
+    wrapper.dataset.index = xyzToIndex(x, y, z);
+
+    // Position the block in 3D space (origin is center of the big cube)
+    // FIX: compute translateZ value numerically FIRST, then concatenate as a plain number.
+    // The old code had 'translateZ((z - 1) * ' + STEP + 'px)' which produced invalid CSS
+    // like "translateZ((-0.5) * 78px)" — parentheses are literal text in JS strings,
+    // not evaluated math operations.
+    var tzVal = (z - 1) * STEP;
+    wrapper.style.transform =
+      'translateX(' + (x * STEP - CUBE_HALF) + 'px) ' +
+      'translateY(' + (-y * STEP + CUBE_HALF) + 'px) ' +
+      'translateZ(' + tzVal + 'px)';
+    wrapper.style.transformStyle = 'preserve-3d';
+
+    // --- Front face (the clickable X/O display surface) ---
+    var frontFace = document.createElement('div');
+    frontFace.className = 'block-face block-front';
+    frontFace.innerHTML = '&nbsp;';
+    // Push the front face to the +Z side so it's visible
+    frontFace.style.transform = 'translateZ(' + (half) + 'px)';
+
+    // --- Top face ---
+    var topFace = document.createElement('div');
+    topFace.className = 'block-face block-top';
+    topFace.innerHTML = '&nbsp;';
+    topFace.style.transform = 'rotateX(90deg) translateZ(' + (half) + 'px)';
+
+    // --- Right face ---
+    var rightFace = document.createElement('div');
+    rightFace.className = 'block-face block-right';
+    rightFace.innerHTML = '&nbsp;';
+    rightFace.style.transform = 'rotateY(90deg) translateZ(' + (half) + 'px)';
+
+    wrapper.appendChild(frontFace);
+    wrapper.appendChild(topFace);
+    wrapper.appendChild(rightFace);
+
+    return wrapper;
+  }
 
   function renderBoard() {
     cubeElement.innerHTML = '';
+    // Clear the frame and re-create it with new dimensions.
+    var oldFrame = cubeElement.querySelector('.cube-frame');
+    if (oldFrame) oldFrame.remove();
 
     for (var z = 0; z < SIZE; z++) {
-      var layerEl = document.createElement('div');
-      layerEl.className = 'layer';
-      layerEl.dataset.z = z;
-
       for (var y = 0; y < SIZE; y++) {
         for (var x = 0; x < SIZE; x++) {
           var index = xyzToIndex(x, y, z);
-          var cellEl = document.createElement('div');
-          cellEl.className = 'cell';
-          if (board[index] === PLAYER_X) cellEl.classList.add('player-x');
-          else if (board[index] === PLAYER_O) cellEl.classList.add('player-o');
+          var block = buildBlock(x, y, z);
 
-          cellEl.textContent = board[index];
-          cellEl.dataset.index = index;
+          // Mark occupied cells
+          if (board[index] === PLAYER_X) {
+            block.querySelector('.block-front').classList.add('player-x');
+          } else if (board[index] === PLAYER_O) {
+            block.querySelector('.block-front').classList.add('player-o');
+          }
 
-          layerEl.appendChild(cellEl);
+          cubeElement.appendChild(block);
         }
       }
-      cubeElement.appendChild(layerEl);
     }
+
+    createCubeFrame();
   }
 
   function updateStatus(message, type) {
@@ -452,10 +510,10 @@
   // ============================================================
 
   function handleCellClick(e) {
-    var cell = e.target.closest('.cell');
-    if (!cell || !isGameActive || currentPlayer !== PLAYER_X) return;
+    var block = e.target.closest('.block-wrapper');
+    if (!block || !isGameActive || currentPlayer !== PLAYER_X) return;
 
-    var index = parseInt(cell.dataset.index);
+    var index = parseInt(block.dataset.index, 10);
     if (board[index] !== '') return;
 
     makeMove(index, PLAYER_X);
@@ -493,33 +551,18 @@
     var line = getWinningLine();
     if (!line) return;
 
-    cubeElement.innerHTML = '';
+    // Re-render with winning blocks highlighted.
+    renderBoard();
 
-    for (var z = 0; z < SIZE; z++) {
-      var layerEl = document.createElement('div');
-      layerEl.className = 'layer';
-      layerEl.dataset.z = z;
-
-      for (var y = 0; y < SIZE; y++) {
-        for (var x = 0; x < SIZE; x++) {
-          var index = xyzToIndex(x, y, z);
-          var cellEl = document.createElement('div');
-          cellEl.className = 'cell';
-          if (board[index] === PLAYER_X) cellEl.classList.add('player-x');
-          else if (board[index] === PLAYER_O) cellEl.classList.add('player-o');
-
-          for (var w = 0; w < line.length; w++) {
-            if (line[w] === index) {
-              cellEl.classList.add('winning-line');
-              break;
-            }
-          }
-
-          cellEl.textContent = board[index];
-          layerEl.appendChild(cellEl);
-        }
+    for (var w = 0; w < line.length; w++) {
+      var idx = line[w];
+      var block = cubeElement.querySelector('.block-wrapper[data-index="' + idx + '"]');
+      if (!block) continue;
+      // Add winning glow to all visible faces
+      var faces = block.querySelectorAll('.block-face');
+      for (var f = 0; f < faces.length; f++) {
+        faces[f].classList.add('winning-line');
       }
-      cubeElement.appendChild(layerEl);
     }
   }
 
@@ -583,7 +626,7 @@
     // Reset button
     resetButton.addEventListener('click', resetGame);
 
-    // Cell click handler (event delegation)
+    // Cell click handler (event delegation on cube)
     cubeElement.addEventListener('click', handleCellClick);
   }
 
