@@ -107,8 +107,8 @@ select {
 /* ============================================================ */
 
 .board-3d-container {
-  width: 380px; /* Adjusted for tighter fit and more pronounced 3D effect */
-  height: 380px;
+  width: <PERSON>; /* Adjusted for tighter fit and more pronounced 3D effect */
+  height: <PERSON>;
   perspective: 800px; /* Reduced for a more pronounced 3D effect */
   margin: 0 auto 1.5rem auto;
   display: flex;
