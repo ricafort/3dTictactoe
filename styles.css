@@ -107,9 +107,9 @@ select {
 /* ============================================================ */
 
 .board-3d-container {
-  width: 480px; /* Ample space for the cube + perspective */
-  height: 480px;
-  perspective: 1600px;
+  width: 400px; /* Adjusted for tighter fit and more pronounced 3D effect */
+  height: 400px;
+  perspective: 1000px; /* Reduced for a more pronounced 3D effect */
   margin: 0 auto 1.5rem auto;
   display: flex;
   justify-content: center;
@@ -118,8 +118,8 @@ select {
 
 /* The main cube wrapper — holds blocks + frame */
 .cube {
-  width: 224px; /* CUBE_SIDE from JS */
-  height: 224px; /* CUBE_SIDE from JS */
+  width: <NRP>; /* CUBE_SIDE from JS */
+  height: <NRP>; /* CUBE_SIDE from JS */
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.15s ease-out;
@@ -167,8 +167,8 @@ select {
 
 /* Front face — the main clickable display surface */
 .block-front {
-  background: linear-gradient(165deg, #2a3f5f, #1e293b);
-  border: 2px solid var(--cell-border);
+  background: linear-gradient(165deg, #324a6e, #24344d); /* Slightly brighter */
+  border: 3px solid var(--cell-border); /* Thicker border */
   box-shadow:
     inset 0 -4px 8px rgba(0, 0, 0, 0.3),
     inset 0 2px 6px rgba(255, 255, 255, 0.06);
@@ -176,14 +176,14 @@ select {
 
 /* Top face — lighter for "lit from above" depth cue */
 .block-top {
-  background: linear-gradient(180deg, #3b4f74, #2a3f5f);
-  border: 1px solid rgba(139, 216, 240, 0.25);
+  background: linear-gradient(180deg, #4a648b, #3b4f74); /* Brighter top */
+  border: 1px solid rgba(139, 216, 240, 0.35); /* More defined border */
 }
 
 /* Right face — darker for shadowed side */
 .block-right {
-  background: linear-gradient(180deg, #1e2d45, #<US_DRIVER_LICENSE>);
-  border: 1px solid rgba(0, 0, 0, 0.4);
+  background: linear-gradient(180deg, #18253a, #1e2d45); /* Darker right */
+  border: 1px solid rgba(0, 0, 0, 0.5); /* More defined border */
 }
 
 /* --- Player X styling (front face) --- */
@@ -225,8 +225,8 @@ select {
 .face-plane {
   position: absolute;
   top: 50%; left: 50%;
-  width: 224px; /* CUBE_SIDE from JS */
-  height: 224px; /* CUBE_SIDE from JS */
+  width: <NRP>; /* CUBE_SIDE from JS */
+  height: <NRP>; /* CUBE_SIDE from JS */
   margin-left: -112px; /* -CUBE_HALF from JS */
   margin-top: -112px;  /* -CUBE_HALF from JS */
   background: rgba(139, <DATE_TIME>, 246, 0.05); /* Very subtle purple tint */
@@ -244,16 +244,16 @@ select {
 /* --- Wireframe edge lines (12 edges of the cube) --- */
 .edge-line {
   position: absolute;
-  background: rgba(139, <DATE_TIME>, 246, 0.5); /* Semi-transparent purple */
+  background: rgba(139, <DATE_TIME>, 246, <DATE_TIME>); /* More opaque purple */
   transform-style: preserve-3d;
 }
 
 /* Horizontal edges in XY planes - full width */
-.edge-h { height: 3px; width: 224px; } /* CUBE_SIDE */
+.edge-h { height: 4px; width: <NRP>; } /* CUBE_SIDE - thicker */
 /* Vertical edges in XY planes - full height */
-.edge-v { width: 3px; height: 224px; } /* CUBE_SIDE */
+.edge-v { width: 4px; height: <NRP>; } /* CUBE_SIDE - thicker */
 /* Depth edges (along Z) - drawn as thin lines at corners */
-.edge-z { width: 3px; height: 3px; background: rgba(167, <DATE_TIME>, 250, 0.8); }
+.edge-z { width: 4px; height: 4px; background: rgba(167, <DATE_TIME>, 250, 0.9); } /* Thicker and more opaque */
 
 #reset-btn {
   background: var(--brand-color);
@@ -279,11 +279,11 @@ select {
 @media (max-width: <NRP>) {
   .game-container { padding: 1.2rem; }
   <US_DRIVER_LICENSE> { font-size: 1.6rem; }
-  .board-3d-container { width: 340px; height: 340px; perspective: 900px; }
+  .board-3d-container { width: 300px; height: 300px; perspective: 800px; } /* Adjusted for mobile */
 
   .cube {
-    width: 158px;  /* Mobile CUBE_SIDE */
-    height: 158px; /* Mobile CUBE_SIDE */
+    width: <NRP>;  /* Mobile CUBE_SIDE */
+    height: <NRP>; /* Mobile CUBE_SIDE */
   }
 
   /* Adjust block size for mobile */
@@ -292,13 +292,13 @@ select {
 
   /* Cube frame faces (mobile) */
   .face-plane {
-    width: 158px;  /* Mobile CUBE_SIDE */
-    height: 158px; /* Mobile CUBE_SIDE */
+    width: <NRP>;  /* Mobile CUBE_SIDE */
+    height: <NRP>; /* Mobile CUBE_SIDE */
     margin-left: -79px; /* Mobile CUBE_HALF */
     margin-top: -79px;  /* Mobile CUBE_HALF */
   }
 
   /* Mobile wireframe edges */
-  .edge-h { width: 158px; } /* Mobile CUBE_SIDE */
-  .edge-v { height: 158px; } /* Mobile CUBE_SIDE */
+  .edge-h { height: 4px; width: <NRP>; } /* Mobile CUBE_SIDE - thicker */
+  .edge-v { height: 4px; width: <NRP>; } /* Mobile CUBE_SIDE - thicker */
 }
