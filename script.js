@@ -10,14 +10,14 @@
   var TOTAL_CELLS = SIZE * SIZE * SIZE; // 27
   var PLAYER_X = 'X';
   var PLAYER_O = 'O'; // AI
-  
+
   // --- Game State ---
   var board = new Array(TOTAL_CELLS).fill('');
   var currentPlayer = PLAYER_X;
   var isGameActive = true;
   var winningLines = [];
   var selectedDifficulty = 'medium';
-  
+
   // --- DOM References (populated on init) ---
   var statusDisplay, resetButton, difficultySelect, cubeElement;
   var rotateXSlider, rotateYSlider;
@@ -166,102 +166,63 @@
     var target = currentBoard || board;
     for (var i = 0; i < winningLines.length; i++) {
       var line = winningLines[i];
-  }
-
-  // --- Medium: shallow minimax (depth=2) + occasional mistakes ---
-  function getMediumMove() {
-    var emptyCells = getAvailableMoves();
-    
-    if (!emptyCells.length) return -1;
-
-    // If only one cell left, take it immediately
-    if (emptyCells.length === 1) return emptyCells[0];
-
-    // ~30% chance to make a random mistake
-    if (Math.random() < 0.30)
-      return emptyCells[Math.floor(Math.random() * emptyCells.length)];
-    }
-
-    // Prioritize center cell (index 13) and corners for stronger play
-    var orderedCells = prioritizeMoves(emptyCells);
-
-    var bestVal = -Infinity;
-    var bestMove = orderedCells[0];
-    for (var i = 0; i < emptyCells.length; i++) {
-      var cell = orderedCells[i];
-      var save = board[cell]; // in case it's already set
-      board[cell] = PLAYER_O;
-      var moveVal = minimax(board.slice(), 2, false, -Infinity, Infinity);
-      board[cell] = save || '';
-
-      // Early exit on instant win
-      if (moveVal >= 10) return cell;
-
-      if (moveVal > bestVal) { bestVal = moveVal; bestMove = cell; }
-    }
-    
-    // Safety fallback: if nothing improved, pick first available
-    if (!bestMove || board[bestMove] !== '') {
-      bestMove = emptyCells[0];
-    }
-    return bestMove;
-  }
-
-  // --- Hard: deeper minimax with alpha-beta (depth=3 for responsiveness on 27-cell board) ---
-  function getHardMove() {
-    var emptyCells = getAvailableMoves();
-    if (!emptyCells.length) return -1;
-    if (emptyCells.length === 1) return emptyCells[0];
-
-    // Prioritize center and strategic cells
-    var orderedCells = prioritizeMoves(emptyCells);
-
-    var bestVal = -Infinity, bestMove = emptyCells[0];
-    for (var i = 0; i < orderedCells.length; i++) {
-      var cell = orderedCells[i];
-      var save = board[cell];
-      board[cell] = PLAYER_O;
-      var moveVal = minimax(board.slice(), 3, false, -Infinity, Infinity);
-      board[cell] = save || '';
-
-      // Early exit on instant win
-      if (moveVal >= 10) return cell;
-
-      if (moveVal > bestVal) { bestVal = moveVal; bestMove = cell; }
-    }
-    
-    // Safety fallback: pick first available if nothing improved
-    if (!bestMove || board[bestMove] !== '') {
-      bestMove = emptyCells[0];
-    }
-    return bestMove;
-  }
-
-  // --- Move ordering: prioritize center, then corners, then edges for better pruning ---
-  function prioritizeMoves(emptyCells) {
-    var priorityOrder = [
-      13, // center (most strategic)
-      0, 2, 6, 8, 18, 20, 24, 26, // corners
-      1, 3, 4, 5, 7, 9, 10, 11, 12, 14, 15, 16, 17, 19, 21, 22, 23 // edges
-    ];
-    var result = [];
-    for (var i = 0; i < priorityOrder.length; i++) {
-      if (emptyCells.indexOf(priorityOrder[i]) !== -1) {
-        result.push(priorityOrder[i]);
+      if (target[line[0]] &&
+          target[line[0]] === target[line[1]] &&
+          target[line[0]] === target[line[2]]) {
+        return line;
       }
     }
-    return result;
+    return null;
+  }
+
+  function isBoardFull(currentBoard) {
+    var target = currentBoard || board;
+    for (var i = 0; i < TOTAL_CELLS; i++) {
+      if (target[i] === '') return false;
+    }
+    return true;
   }
 
   // ============================================================
-  // RENDERING
+  // HEURISTIC EVALUATION
+  // ============================================================
+
+  function heuristicEvaluate(currentBoard) {
+    var score = 0;
+    for (var i = 0; i < winningLines.length; i++) {
+      var line = winningLines[i];
+      var xCount = 0, oCount = 0, emptyCount = 0;
+      for (var j = 0; j < 3; j++) {
+        if (currentBoard[line[j]] === PLAYER_X) xCount++;
+        else if (currentBoard[line[j]] === PLAYER_O) oCount++;
+        else emptyCount++;
+      }
+      // AI (O) building lines → positive score
+      if (oCount > 0 && emptyCount > 0) score += oCount * 10;
+      // Player X building lines → negative score (block these)
+      if (xCount > 0 && emptyCount > 0) score -= xCount * 8;
+    }
+    return score;
+  }
+
+  // ============================================================
+  // MINIMAX WITH ALPHA-BETA PRUNING
+  // ============================================================
+
+  function evaluate(currentBoard) {
+    var winner = checkWinner(currentBoard);
+    if (winner === PLAYER_O) return 10;
+    if (winner === PLAYER_X) return -10;
+    return 0;
+  }
+
   function minimax(currentBoard, depthLeft, isMaximizing, alpha, beta) {
     var score = evaluate(currentBoard);
 
     // Terminal states: someone won
     if (score === 10) return score - ((depthLeft !== null && depthLeft !== undefined) ? depthLeft : 0);
     if (score === -10) return score + ((depthLeft !== null && depthLeft !== undefined) ? depthLeft : 0);
-    
+
     // Draw
     if (isBoardFull(currentBoard)) return 0;
 
@@ -318,37 +279,92 @@
     return available[Math.floor(Math.random() * available.length)];
   }
 
+  // --- Move ordering helper: prioritize center, then corners, then edges ---
+  // This dramatically improves alpha-beta pruning efficiency on a 27-cell board.
+  function prioritizeMoves(emptyCells) {
+    var priorityOrder = [
+      13, // center (most strategic)
+      0, 2, 6, 8, 18, 20, 24, 26, // corners
+      1, 3, 4, 5, 7, 9, 10, 11, 12, 14, 15, 16, 17, 19, 21, 22, 23 // edges
+    ];
+    var result = [];
+    for (var i = 0; i < priorityOrder.length; i++) {
+      if (emptyCells.indexOf(priorityOrder[i]) !== -1) {
+        result.push(priorityOrder[i]);
+      }
+    }
+    // Any empty cells not in the priority order come last
+    for (var j = 0; j < emptyCells.length; j++) {
+      if (result.indexOf(emptyCells[j]) === -1) {
+        result.push(emptyCells[j]);
+      }
+    }
+    return result;
+  }
+
   // --- Medium: shallow minimax (depth=2) + occasional mistakes ---
   function getMediumMove() {
     var emptyCells = getAvailableMoves();
-    
+
+    if (!emptyCells.length) return -1;
+    if (emptyCells.length === 1) return emptyCells[0];
+
     // ~30% chance to make a random mistake
-    if (Math.random() < 0.30 && emptyCells.length > 1) {
+    if (Math.random() < 0.30) {
       return emptyCells[Math.floor(Math.random() * emptyCells.length)];
     }
 
-    var bestVal = -Infinity, bestMove = emptyCells[0];
-    for (var i = 0; i < emptyCells.length; i++) {
-      board[emptyCells[i]] = PLAYER_O;
+    var orderedCells = prioritizeMoves(emptyCells);
+
+    var bestVal = -Infinity;
+    var bestMove = orderedCells[0];
+    for (var i = 0; i < orderedCells.length; i++) {
+      var cell = orderedCells[i];
+      board[cell] = PLAYER_O;
+      // Pass a copy to minimax so we don't mutate shared state
       var moveVal = minimax(board.slice(), 2, false, -Infinity, Infinity);
-      board[emptyCells[i]] = '';
-      if (moveVal > bestVal) { bestVal = moveVal; bestMove = emptyCells[i]; }
+      board[cell] = '';
+
+      // Early exit on instant win — no need to check other cells
+      if (moveVal >= 10) return cell;
+
+      if (moveVal > bestVal) { bestVal = moveVal; bestMove = cell; }
+    }
+
+    // Safety fallback: if nothing improved, pick first available
+    if (!bestMove || board[bestMove] !== '') {
+      bestMove = emptyCells[0];
     }
     return bestMove;
   }
 
-  // --- Hard: deeper minimax with alpha-beta (depth=4) ---
+  // --- Hard: deeper minimax with alpha-beta (depth=3 for responsiveness on 27-cell board) ---
   function getHardMove() {
     var emptyCells = getAvailableMoves();
-    
-    if (emptyCells.length === 0) return -1;
 
-    var bestVal = -Infinity, bestMove = emptyCells[0];
-    for (var i = 0; i < emptyCells.length; i++) {
-      board[emptyCells[i]] = PLAYER_O;
-      var moveVal = minimax(board.slice(), 4, false, -Infinity, Infinity);
-      board[emptyCells[i]] = '';
-      if (moveVal > bestVal) { bestVal = moveVal; bestMove = emptyCells[i]; }
+    if (!emptyCells.length) return -1;
+    if (emptyCells.length === 1) return emptyCells[0];
+
+    var orderedCells = prioritizeMoves(emptyCells);
+
+    var bestVal = -Infinity;
+    var bestMove = orderedCells[0];
+    for (var i = 0; i < orderedCells.length; i++) {
+      var cell = orderedCells[i];
+      board[cell] = PLAYER_O;
+      // Pass a copy to minimax so we don't mutate shared state
+      var moveVal = minimax(board.slice(), 3, false, -Infinity, Infinity);
+      board[cell] = '';
+
+      // Early exit on instant win — no need to check other cells
+      if (moveVal >= 10) return cell;
+
+      if (moveVal > bestVal) { bestVal = moveVal; bestMove = cell; }
+    }
+
+    // Safety fallback: pick first available if nothing improved
+    if (!bestMove || board[bestMove] !== '') {
+      bestMove = emptyCells[0];
     }
     return bestMove;
   }
@@ -372,7 +388,7 @@
           cellEl.className = 'cell';
           if (board[index] === PLAYER_X) cellEl.classList.add('player-x');
           else if (board[index] === PLAYER_O) cellEl.classList.add('player-o');
-          
+
           cellEl.textContent = board[index];
           cellEl.dataset.index = index;
 
