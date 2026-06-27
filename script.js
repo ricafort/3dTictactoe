@@ -343,7 +343,7 @@
     }
 
     if (!bestMove || board[bestMove] !== '') {
-      bestMove = emptyCells[0];
+      bestMove = orderedCells[0];
     }
     return bestMove;
   }
@@ -371,7 +371,7 @@
     }
 
     if (!bestMove || board[bestMove] !== '') {
-      bestMove = emptyCells[0];
+      bestMove = orderedCells[0];
     }
     return bestMove;
   }
