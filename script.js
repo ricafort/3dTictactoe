@@ -1,291 +1,507 @@
-// --- Game State ---
-var board = Array(9).fill('');
-var currentPlayer = 'X';
-var isGameActive = true;
+// ============================================================
+// 3D Tic-Tac-Toe — Full Game Logic
+// Board: 3×3×3 = 27 cells, indexed as z*9 + y*3 + x
+// Winning lines: 49 total (rows + columns + pillars + face diags + space diags)
+// ============================================================
 
-// --- DOM Elements (cached at init) ---
-var cells, statusDisplay, resetButton, difficultySelect;
+(function() {
+  // --- Constants ---
+  var SIZE = 3;
+  var TOTAL_CELLS = SIZE * SIZE * SIZE; // 27
+  var PLAYER_X = 'X';
+  var PLAYER_O = 'O'; // AI
+  
+  // --- Game State ---
+  var board = new Array(TOTAL_CELLS).fill('');
+  var currentPlayer = PLAYER_X;
+  var isGameActive = true;
+  var winningLines = [];
+  var selectedDifficulty = 'medium';
+  
+  // --- DOM References (populated on init) ---
+  var statusDisplay, resetButton, difficultySelect, cubeElement;
+  var rotateXSlider, rotateYSlider;
 
-// --- Winning Conditions ---
-var winningConditions = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8],
-    [0, 3, 6], [1, 4, 7], [2, 5, 8],
-    [0, 4, 8], [2, 4, 6]
-];
+  // ============================================================
+  // INDEXING HELPERS
+  // ============================================================
 
-// --- Core Functions ---
+  function xyzToIndex(x, y, z) {
+    return z * SIZE * SIZE + y * SIZE + x;
+  }
 
-function renderBoard() {
-    for (var i = 0; i < cells.length; i++) {
-        var cell = cells[i];
-        cell.textContent = board[i];
-        cell.classList.remove("player-x", "player-o");
-        if (board[i] === 'X') {
-            cell.classList.add("player-x");
-        } else if (board[i] === 'O') {
-            cell.classList.add("player-o");
-        }
+  function indexToXYZ(index) {
+    var z = Math.floor(index / (SIZE * SIZE));
+    var remainder = index % (SIZE * SIZE);
+    var y = Math.floor(remainder / SIZE);
+    var x = remainder % SIZE;
+    return { x: x, y: y, z: z };
+  }
+
+  // ============================================================
+  // WINNING LINES GENERATION (49 total)
+  // ============================================================
+
+  function generateWinningLines() {
+    var lines = [];
+
+    // --- Rows (along X axis): fixed y, fixed z, varying x → 3×3 = 9 ---
+    for (var z = 0; z < SIZE; z++) {
+      for (var y = 0; y < SIZE; y++) {
+        lines.push([
+          xyzToIndex(0, y, z),
+          xyzToIndex(1, y, z),
+          xyzToIndex(2, y, z)
+        ]);
+      }
     }
-}
 
-function updateStatus(message, type) {
-    statusDisplay.textContent = message;
-    statusDisplay.className = "status " + type;
-}
-
-// --- Player Move via click on cell by index (avoids `this` binding issues with arrow functions) ---
-
-function initClickHandlers() {
-    cells.forEach(function(cell, index) {
-        cell.addEventListener("click", function(idx) {
-            return function() { handlePlayerMove(idx); };
-        }(index));
-    });
-}
-
-function handlePlayerMove(index) {
-    if (!isGameActive || board[index] !== '' || currentPlayer === 'O') {
-        return;
+    // --- Columns (along Y axis): fixed x, fixed z, varying y → 3×3 = 9 ---
+    for (var z = 0; z < SIZE; z++) {
+      for (var x = 0; x < SIZE; x++) {
+        lines.push([
+          xyzToIndex(x, 0, z),
+          xyzToIndex(x, 1, z),
+          xyzToIndex(x, 2, z)
+        ]);
+      }
     }
-    makeMove(index, 'X');
-    checkGameStatus();
 
-    if (isGameActive && currentPlayer === 'O') {
-        setTimeout(aiMove, 400);
+    // --- Pillars (along Z axis): fixed x, fixed y, varying z → 3×3 = 9 ---
+    for (var y = 0; y < SIZE; y++) {
+      for (var x = 0; x < SIZE; x++) {
+        lines.push([
+          xyzToIndex(x, y, 0),
+          xyzToIndex(x, y, 1),
+          xyzToIndex(x, y, 2)
+        ]);
+      }
     }
-}
 
-function makeMove(index, player) {
-    board[index] = player;
-    renderBoard();
-}
+    // --- Face Diagonals in XY planes (fixed z): 2 per layer × 3 = 6 ---
+    for (var z = 0; z < SIZE; z++) {
+      lines.push([
+        xyzToIndex(0, 0, z),
+        xyzToIndex(1, 1, z),
+        xyzToIndex(2, 2, z)
+      ]);
+      lines.push([
+        xyzToIndex(0, 2, z),
+        xyzToIndex(1, 1, z),
+        xyzToIndex(2, 0, z)
+      ]);
+    }
 
-// --- Game Status Checks ---
+    // --- Face Diagonals in XZ planes (fixed y): 2 per slice × 3 = 6 ---
+    for (var y = 0; y < SIZE; y++) {
+      lines.push([
+        xyzToIndex(0, y, 0),
+        xyzToIndex(1, y, 1),
+        xyzToIndex(2, y, 2)
+      ]);
+      lines.push([
+        xyzToIndex(0, y, 2),
+        xyzToIndex(1, y, 1),
+        xyzToIndex(2, y, 0)
+      ]);
+    }
 
-function checkWinner(currentBoard) {
+    // --- Face Diagonals in YZ planes (fixed x): 2 per column × 3 = 6 ---
+    for (var x = 0; x < SIZE; x++) {
+      lines.push([
+        xyzToIndex(x, 0, 0),
+        xyzToIndex(x, 1, 1),
+        xyzToIndex(x, 2, 2)
+      ]);
+      lines.push([
+        xyzToIndex(x, 0, 2),
+        xyzToIndex(x, 1, 1),
+        xyzToIndex(x, 2, 0)
+      ]);
+    }
+
+    // --- Space Diagonals (through cube center): 4 ---
+    lines.push([
+      xyzToIndex(0, 0, 0),
+      xyzToIndex(1, 1, 1),
+      xyzToIndex(2, 2, 2)
+    ]);
+    lines.push([
+      xyzToIndex(0, 0, 2),
+      xyzToIndex(1, 1, 1),
+      xyzToIndex(2, 2, 0)
+    ]);
+    lines.push([
+      xyzToIndex(0, 2, 0),
+      xyzToIndex(1, 1, 1),
+      xyzToIndex(2, 0, 2)
+    ]);
+    lines.push([
+      xyzToIndex(2, 0, 0),
+      xyzToIndex(1, 1, 1),
+      xyzToIndex(0, 2, 2)
+    ]);
+
+    return lines;
+  }
+
+  // ============================================================
+  // GAME STATE CHECKS
+  // ============================================================
+
+  function checkWinner(currentBoard) {
     var target = currentBoard || board;
-    for (var i = 0; i < winningConditions.length; i++) {
-        var cond = winningConditions[i];
-        if (target[cond[0]] &&
-            target[cond[0]] === target[cond[1]] &&
-            target[cond[0]] === target[cond[2]]) {
-            return target[cond[0]];
-        }
+    for (var i = 0; i < winningLines.length; i++) {
+      var line = winningLines[i];
+      if (target[line[0]] &&
+          target[line[0]] === target[line[1]] &&
+          target[line[0]] === target[line[2]]) {
+        return target[line[0]];
+      }
     }
     return null;
-}
+  }
 
-function checkDraw(currentBoard) {
+  function getWinningLine(currentBoard) {
     var target = currentBoard || board;
-    for (var i = 0; i < 9; i++) {
-        if (target[i] === '') return false;
+    for (var i = 0; i < winningLines.length; i++) {
+      var line = winningLines[i];
+      if (target[line[0]] &&
+          target[line[0]] === target[line[1]] &&
+          target[line[0]] === target[line[2]]) {
+        return line;
+      }
+    }
+    return null;
+  }
+
+  function isBoardFull(currentBoard) {
+    var target = currentBoard || board;
+    for (var i = 0; i < TOTAL_CELLS; i++) {
+      if (target[i] === '') return false;
     }
     return true;
-}
+  }
 
-function switchPlayer() {
-    currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
-}
+  // ============================================================
+  // HEURISTIC EVALUATION
+  // ============================================================
 
-function checkGameStatus() {
-    var winner = checkWinner();
-    if (winner) {
-        isGameActive = false;
-        updateStatus(winner + " wins!", "winner");
-        return;
+  function heuristicEvaluate(currentBoard) {
+    var score = 0;
+    for (var i = 0; i < winningLines.length; i++) {
+      var line = winningLines[i];
+      var xCount = 0, oCount = 0, emptyCount = 0;
+      for (var j = 0; j < 3; j++) {
+        if (currentBoard[line[j]] === PLAYER_X) xCount++;
+        else if (currentBoard[line[j]] === PLAYER_O) oCount++;
+        else emptyCount++;
+      }
+      // AI (O) building lines → positive score
+      if (oCount > 0 && emptyCount > 0) score += oCount * 10;
+      // Player X building lines → negative score (block these)
+      if (xCount > 0 && emptyCount > 0) score -= xCount * 8;
     }
-    if (checkDraw()) {
-        isGameActive = false;
-        updateStatus("It's a draw!", "draw");
-        return;
+    return score;
+  }
+
+  // ============================================================
+  // MINIMAX WITH ALPHA-BETA PRUNING
+  // ============================================================
+
+  function evaluate(currentBoard) {
+    var winner = checkWinner(currentBoard);
+    if (winner === PLAYER_O) return 10;
+    if (winner === PLAYER_X) return -10;
+    return 0;
+  }
+
+  function minimax(currentBoard, depthLeft, isMaximizing, alpha, beta) {
+    var score = evaluate(currentBoard);
+
+    // Terminal states: someone won
+    if (score === 10) return score - ((depthLeft !== null && depthLeft !== undefined) ? depthLeft : 0);
+    if (score === -10) return score + ((depthLeft !== null && depthLeft !== undefined) ? depthLeft : 0);
+    
+    // Draw
+    if (isBoardFull(currentBoard)) return 0;
+
+    // Depth limit reached → use heuristic
+    if (depthLeft !== null && depthLeft !== undefined && depthLeft <= 0) {
+      return heuristicEvaluate(currentBoard.slice());
     }
-    switchPlayer();
-    var turnClass = currentPlayer === 'X' ? "player-x-turn" : "player-o-turn";
-    updateStatus(currentPlayer + "'s turn", turnClass);
-}
 
-// --- AI: Easy (completely random) ---
-
-function getEasyMove() {
-    var available = [];
-    for (var i = 0; i < 9; i++) {
-        if (board[i] === '') available.push(i);
-    }
-    return available[Math.floor(Math.random() * available.length)];
-}
-
-// --- AI: Medium (shallow minimax depth=2 + heuristic + occasional mistakes) ---
-
-function getMediumMove() {
     var emptyCells = [];
-    for (var i = 0; i < 9; i++) {
-        if (board[i] === '') emptyCells.push(i);
+    for (var i = 0; i < TOTAL_CELLS; i++) {
+      if (currentBoard[i] === '') emptyCells.push(i);
     }
-    // ~25% chance to make a random mistake
-    if (Math.random() < 0.25 && emptyCells.length > 1) {
-        return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+
+    if (isMaximizing) { // AI's turn (O)
+      var bestVal = -Infinity;
+      for (var i = 0; i < emptyCells.length; i++) {
+        currentBoard[emptyCells[i]] = PLAYER_O;
+        var newVal = minimax(currentBoard, depthLeft > 0 ? depthLeft - 1 : null, false, alpha, beta);
+        currentBoard[emptyCells[i]] = '';
+        if (newVal > bestVal) bestVal = newVal;
+        alpha = Math.max(alpha, bestVal);
+        if (beta <= alpha) break; // Prune
+      }
+      return bestVal;
+    } else { // Player's turn (X)
+      var bestVal = Infinity;
+      for (var i = 0; i < emptyCells.length; i++) {
+        currentBoard[emptyCells[i]] = PLAYER_X;
+        var newVal = minimax(currentBoard, depthLeft > 0 ? depthLeft - 1 : null, true, alpha, beta);
+        currentBoard[emptyCells[i]] = '';
+        if (newVal < bestVal) bestVal = newVal;
+        beta = Math.min(beta, bestVal);
+        if (beta <= alpha) break; // Prune
+      }
+      return bestVal;
+    }
+  }
+
+  // ============================================================
+  // AI MOVE GENERATION
+  // ============================================================
+
+  function getAvailableMoves() {
+    var moves = [];
+    for (var i = 0; i < TOTAL_CELLS; i++) {
+      if (board[i] === '') moves.push(i);
+    }
+    return moves;
+  }
+
+  // --- Easy: completely random ---
+  function getEasyMove() {
+    var available = getAvailableMoves();
+    return available[Math.floor(Math.random() * available.length)];
+  }
+
+  // --- Medium: shallow minimax (depth=2) + occasional mistakes ---
+  function getMediumMove() {
+    var emptyCells = getAvailableMoves();
+    
+    // ~30% chance to make a random mistake
+    if (Math.random() < 0.30 && emptyCells.length > 1) {
+      return emptyCells[Math.floor(Math.random() * emptyCells.length)];
     }
 
     var bestVal = -Infinity, bestMove = emptyCells[0];
     for (var i = 0; i < emptyCells.length; i++) {
-        board[emptyCells[i]] = 'O';          // FIX: use emptyCells[i], not loop index i
-        var moveVal = minimax(board.slice(), 2, false);
-        board[emptyCells[i]] = '';            // FIX: use emptyCells[i], not loop index i
-        if (moveVal > bestVal) {
-            bestVal = moveVal;
-            bestMove = emptyCells[i];          // FIX: return actual cell value, not loop index
-        }
+      board[emptyCells[i]] = PLAYER_O;
+      var moveVal = minimax(board.slice(), 2, false, -Infinity, Infinity);
+      board[emptyCells[i]] = '';
+      if (moveVal > bestVal) { bestVal = moveVal; bestMove = emptyCells[i]; }
     }
     return bestMove;
-}
+  }
 
-// --- AI: Hard/Expert (full minimax — unbeatable) ---
-
-function getHardMove() {
-    var emptyCells = [];
-    for (var i = 0; i < 9; i++) {
-        if (board[i] === '') emptyCells.push(i);
-    }
-    // Edge case: no valid moves at all
+  // --- Hard: deeper minimax with alpha-beta (depth=4) ---
+  function getHardMove() {
+    var emptyCells = getAvailableMoves();
+    
     if (emptyCells.length === 0) return -1;
 
     var bestVal = -Infinity, bestMove = emptyCells[0];
     for (var i = 0; i < emptyCells.length; i++) {
-        board[emptyCells[i]] = 'O';
-        var moveVal = minimax(board.slice(), null, false);
-        board[emptyCells[i]] = '';
-        if (moveVal > bestVal) {
-            bestVal = moveVal;
-            bestMove = emptyCells[i];
-        }
+      board[emptyCells[i]] = PLAYER_O;
+      var moveVal = minimax(board.slice(), 4, false, -Infinity, Infinity);
+      board[emptyCells[i]] = '';
+      if (moveVal > bestVal) { bestVal = moveVal; bestMove = emptyCells[i]; }
     }
     return bestMove;
-}
+  }
 
-// --- Minimax Engine ---
+  // ============================================================
+  // RENDERING
+  // ============================================================
 
-function evaluate(currentBoard) {
-    var winner = checkWinner(currentBoard);
-    if (winner === 'O') return 10;
-    if (winner === 'X') return -10;
-    return 0;
-}
+  function renderBoard() {
+    cubeElement.innerHTML = '';
 
-/**
- * Heuristic evaluation for non-terminal positions.
- * Counts open lines (rows/cols/diags) for each player and scores accordingly.
- */
-function heuristicEvaluate(currentBoard) {
-    var score = 0;
-    // For each winning condition line, count how many cells are X or O
-    for (var i = 0; i < winningConditions.length; i++) {
-        var cond = winningConditions[i];
-        var xCount = 0, oCount = 0, emptyInLine = 0;
-        for (var j = 0; j < 3; j++) {
-            if (currentBoard[cond[j]] === 'X') xCount++;
-            else if (currentBoard[cond[j]] === 'O') oCount++;
-            else emptyInLine++;
+    for (var z = 0; z < SIZE; z++) {
+      var layerEl = document.createElement('div');
+      layerEl.className = 'layer';
+      layerEl.dataset.z = z;
+
+      for (var y = 0; y < SIZE; y++) {
+        for (var x = 0; x < SIZE; x++) {
+          var index = xyzToIndex(x, y, z);
+          var cellEl = document.createElement('div');
+          cellEl.className = 'cell';
+          if (board[index] === PLAYER_X) cellEl.classList.add('player-x');
+          else if (board[index] === PLAYER_O) cellEl.classList.add('player-o');
+          
+          cellEl.textContent = board[index];
+          cellEl.dataset.index = index;
+
+          layerEl.appendChild(cellEl);
         }
-        // Reward O's open lines, penalize X's open lines
-        if (oCount > 0 && emptyInLine > 0) score += oCount * 3;
-        if (xCount > 0 && emptyInLine > 0) score -= xCount * 3;
+      }
+      cubeElement.appendChild(layerEl);
     }
-    return score;
-}
+  }
 
-/**
- * @param {Array} board - current board state to evaluate recursively (passed by copy)
- * @param {number|null} depthLeft - remaining depth budget; null = unlimited search
- * @param {boolean} isMaximizing - true for AI ('O'), false for player X
- */
-function minimax(board, depthLeft, isMaximizing) {
-    var score = evaluate(board);
+  function updateStatus(message, type) {
+    statusDisplay.textContent = message;
+    statusDisplay.className = 'status ' + type;
+  }
 
-    // Terminal state: someone won
-    if (score === 10) return score - ((depthLeft !== null && depthLeft !== undefined) ? depthLeft : 0);
-    if (score === -10) return score + ((depthLeft !== null && depthLeft !== undefined) ? depthLeft : 0);
-    if (checkDraw(board)) return 0;
+  // ============================================================
+  // GAME FLOW
+  // ============================================================
 
-    // Depth limit reached → use heuristic instead of plain evaluate()
-    if (depthLeft !== null && depthLeft !== undefined && depthLeft <= 0) {
-        return heuristicEvaluate(board.slice());
+  function handleCellClick(e) {
+    var cell = e.target.closest('.cell');
+    if (!cell || !isGameActive || currentPlayer !== PLAYER_X) return;
+
+    var index = parseInt(cell.dataset.index);
+    if (board[index] !== '') return;
+
+    makeMove(index, PLAYER_X);
+    checkGameStatus();
+
+    if (isGameActive && currentPlayer === PLAYER_O) {
+      setTimeout(aiMove, 350);
     }
+  }
 
-    var emptyCells = [];
-    for (var i = 0; i < 9; i++) {
-        if (board[i] === '') emptyCells.push(i);
+  function makeMove(index, player) {
+    board[index] = player;
+    renderBoard();
+  }
+
+  function checkGameStatus() {
+    var winner = checkWinner();
+    if (winner) {
+      isGameActive = false;
+      updateStatus(winner + ' wins!', 'winner');
+      highlightWinningLine(winner);
+      return;
     }
+    if (isBoardFull()) {
+      isGameActive = false;
+      updateStatus("It's a draw!", 'draw');
+      return;
+    }
+    currentPlayer = (currentPlayer === PLAYER_X) ? PLAYER_O : PLAYER_X;
+    var turnClass = currentPlayer === PLAYER_X ? 'player-x-turn' : 'player-o-turn';
+    updateStatus(currentPlayer + "'s turn", turnClass);
+  }
 
-    if (isMaximizing) { // AI's turn ('O')
-        var bestVal = -Infinity;
-        for (var i = 0; i < emptyCells.length; i++) {
-            board[emptyCells[i]] = 'O';
-            var newVal = minimax(board,
-                (depthLeft !== null && depthLeft !== undefined) ? depthLeft - 1 : null,
-                false);
-            board[emptyCells[i]] = '';
-            if (newVal > bestVal) bestVal = newVal;
+  function highlightWinningLine(winner) {
+    var line = getWinningLine();
+    if (!line) return;
+
+    // Re-render with winning highlights
+    cubeElement.innerHTML = '';
+
+    for (var z = 0; z < SIZE; z++) {
+      var layerEl = document.createElement('div');
+      layerEl.className = 'layer';
+      layerEl.dataset.z = z;
+
+      for (var y = 0; y < SIZE; y++) {
+        for (var x = 0; x < SIZE; x++) {
+          var index = xyzToIndex(x, y, z);
+          var cellEl = document.createElement('div');
+          cellEl.className = 'cell';
+          if (board[index] === PLAYER_X) cellEl.classList.add('player-x');
+          else if (board[index] === PLAYER_O) cellEl.classList.add('player-o');
+
+          // Highlight winning cells
+          for (var w = 0; w < line.length; w++) {
+            if (line[w] === index) {
+              cellEl.classList.add('winning-line');
+              break;
+            }
+          }
+
+          cellEl.textContent = board[index];
+          layerEl.appendChild(cellEl);
         }
-        return bestVal;
-    } else { // Player X's turn
-        var bestVal = Infinity;
-        for (var i = 0; i < emptyCells.length; i++) {
-            board[emptyCells[i]] = 'X';
-            var newVal = minimax(board,
-                (depthLeft !== null && depthLeft !== undefined) ? depthLeft - 1 : null,
-                true);
-            board[emptyCells[i]] = '';
-            if (newVal < bestVal) bestVal = newVal;
-        }
-        return bestVal;
+      }
+      cubeElement.appendChild(layerEl);
     }
-}
+  }
 
-// --- AI Dispatcher ---
-
-function aiMove() {
+  function aiMove() {
+    if (!isGameActive) return;
     var moveIndex;
     switch (selectedDifficulty) {
-        case "easy":   moveIndex = getEasyMove(); break;
-        case "medium": moveIndex = getMediumMove(); break;
-        default:       moveIndex = getHardMove(); break; // hard/expert
+      case 'easy':   moveIndex = getEasyMove(); break;
+      case 'medium': moveIndex = getMediumMove(); break;
+      default:       moveIndex = getHardMove(); break;
     }
     if (moveIndex >= 0 && board[moveIndex] === '') {
-        makeMove(moveIndex, 'O');
-        checkGameStatus();
+      makeMove(moveIndex, PLAYER_O);
+      checkGameStatus();
     }
-}
+  }
 
-// --- Difficulty Selector & Reset ---
+  // ============================================================
+  // ROTATION CONTROLS
+  // ============================================================
 
-var selectedDifficulty;
+  function updateRotation() {
+    var rotateX = rotateXSlider ? rotateXSlider.value : 30;
+    var rotateY = rotateYSlider ? rotateYSlider.value : 45;
+    cubeElement.style.transform = 'rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
+  }
 
-function init() {
-    cells = Array.from(document.querySelectorAll(".cell"));
-    statusDisplay = document.getElementById("status-display");
-    resetButton = document.getElementById("reset-btn");
-    difficultySelect = document.getElementById("difficulty-select");
-    selectedDifficulty = difficultySelect.value || "easy";
+  // ============================================================
+  // INITIALIZATION & RESET
+  // ============================================================
 
-    initClickHandlers();
+  function init() {
+    statusDisplay = document.getElementById('status-display');
+    resetButton = document.getElementById('reset-btn');
+    difficultySelect = document.getElementById('difficulty-select');
+    cubeElement = document.getElementById('tic-tac-toe-cube');
+    rotateXSlider = document.getElementById('rotateX-slider');
+    rotateYSlider = document.getElementById('rotateY-slider');
 
-    difficultySelect.addEventListener("change", function() {
-        selectedDifficulty = this.value;
-        resetGame();
+    // Generate winning lines once at start
+    winningLines = generateWinningLines();
+
+    // Set initial rotation
+    updateRotation();
+
+    // Event listeners for rotation sliders
+    if (rotateXSlider) {
+      rotateXSlider.addEventListener('input', updateRotation);
+    }
+    if (rotateYSlider) {
+      rotateYSlider.addEventListener('input', updateRotation);
+    }
+
+    // Difficulty selector
+    difficultySelect.addEventListener('change', function() {
+      selectedDifficulty = this.value;
+      resetGame();
     });
 
-    resetButton.addEventListener("click", resetGame);
-}
+    // Reset button
+    resetButton.addEventListener('click', resetGame);
 
-document.addEventListener("DOMContentLoaded", function() {
-    init();
-    resetGame();
-});
+    // Cell click handler (event delegation)
+    cubeElement.addEventListener('click', handleCellClick);
+  }
 
-function resetGame() {
-    board = Array(9).fill('');
-    currentPlayer = 'X';
+  function resetGame() {
+    board = new Array(TOTAL_CELLS).fill('');
+    currentPlayer = PLAYER_X;
     isGameActive = true;
     renderBoard();
-    updateStatus("Your turn (X)", "player-x-turn");
-}
+    updateStatus("Your turn (X)", 'player-x-turn');
+  }
+
+  // --- Start on DOM ready ---
+  document.addEventListener('DOMContentLoaded', function() {
+    init();
+    resetGame();
+  });
+
+})();
