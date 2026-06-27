@@ -31,7 +31,7 @@ body {
   border: 1px solid var(--cell-border);
   padding: 2rem;
   border-radius: 1rem;
-  max-width: 600px;
+  max-width: 650px;
   width: 100%;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
@@ -102,75 +102,108 @@ select {
   cursor: grab;
 }
 
-/* --- 3D Board Container --- */
+/* ============================================================ */
+/*                   3D BOARD CONTAINER                         */
+/* ============================================================ */
+
 .board-3d-container {
-  width: 420px;
-  height: 420px;
-  perspective: 1400px;
+  width: 480px;
+  height: 480px;
+  perspective: 1600px;
   margin: 0 auto 1.5rem auto;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* The main cube wrapper — holds layers + frame */
+/* The main cube wrapper — holds blocks + frame */
 .cube {
-  width: 270px;
-  height: 270px;
+  width: 260px;
+  height: 260px;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.15s ease-out;
 }
 
-/* --- Individual Layers (the 3 grid planes) --- */
-.layer {
+/* ============================================================ */
+/*                   INDIVIDUAL BLOCK (small cube)                */
+/* ============================================================ */
+
+.block-wrapper {
+  position: absolute;
+  width: 68px;
+  height: 68px;
+  cursor: pointer;
+  transition: transform 0.2s ease-out, filter 0.25s ease;
+}
+
+/* Hover highlight for empty cells */
+.block-wrapper:not(.occupied):hover .block-front {
+  border-color: var(--brand-color);
+  box-shadow: inset 0 0 16px rgba(139, 92, 246, 0.5),
+              0 0 8px rgba(139, 92, 246, 0.3);
+}
+
+/* Occupied blocks slightly dimmer */
+.block-wrapper.occupied {
+  cursor: default;
+}
+.block-wrapper.occupied .block-front {
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Faces of the small block --- */
+.block-face {
   position: absolute;
   top: 50%; left: 50%;
-  display: grid;
-  grid-template-columns: repeat(3, 80px);
-  grid-template-rows: repeat(3, 80px);
-  gap: 6px;
-  padding: 6px;
-  background: rgba(173, 216, 230, 0.12);
-  border: 1px solid rgba(173, 216, 230, 0.35);
-  border-radius: 8px;
+  width: 68px; height: 68px;
+  margin-left: -34px; margin-top: -34px;
+  border-radius: 10px;
   transform-style: preserve-3d;
 }
 
-/* Z-offsets for each layer */
-.layer[data-z="0"] { transform: translate(-50%, -50%) translateZ(-120px); }
-.layer[data-z="1"] { transform: translate(-50%, -50%) translateZ(0px);  }
-.layer[data-z="2"] { transform: translate(-50%, -50%) translateZ(120px);} /* Back layer */
-
-.cell {
-  width: 80px;
-  height: 80px;
-  background: rgba(30, 41, 59, 0.7);
+/* Front face — the main clickable display surface */
+.block-front {
+  background: linear-gradient(165deg, #2a3f5f, #1e293b);
   border: 2px solid var(--cell-border);
-  border-radius: 6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 2.8rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
-  user-select: none;
+  box-shadow:
+    inset 0 -4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 6px rgba(255, 255, 255, 0.06);
 }
 
-.cell:hover:not(.occupied) {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: var(--brand-color);
+/* Top face — lighter for "lit from above" depth cue */
+.block-top {
+  background: linear-gradient(180deg, #3b4f74, #2a3f5f);
+  border: 1px solid rgba(139, 216, 240, 0.25);
 }
 
-.cell.player-x { color: var(--player-x-color); }
-.cell.player-o { color: var(--player-o-color); }
+/* Right face — darker for shadowed side */
+.block-right {
+  background: linear-gradient(180deg, #1e2d45, #172033);
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
 
-.cell.winning-line {
-  background-color: var(--winner-color) !important;
-  color: #fff !important;
+/* --- Player X styling (front face) --- */
+.block-front.player-x {
+  color: var(--player-x-color);
+  background: linear-gradient(165deg, #3b2530, #2a1a28);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* --- Player O styling (front face) --- */
+.block-front.player-o {
+  color: var(--player-o-color);
+  background: linear-gradient(165deg, #1e3a5f, #172b45);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+/* --- Winning line glow (applied to all visible faces) --- */
+.block-face.winning-line {
+  background: var(--winner-color) !important;
   border-color: #059669 !important;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.7);
+  box-shadow:
+    inset 0 0 18px rgba(255, 255, 255, 0.4),
+    0 0 18px rgba(16, 185, 129, 0.7);
 }
 
 /* ============================================================ */
@@ -185,37 +218,37 @@ select {
   transform-style: preserve-3d;
 }
 
-/* --- 6 semi-transparent face planes --- */
+/* --- 6 semi-transparent face planes (cube shell) --- */
 .face-plane {
   position: absolute;
   top: 50%; left: 50%;
-  width: 270px; height: 270px;
-  margin-left: -135px; margin-top: -135px;
-  background: rgba(139, 92, 246, 0.04);
+  width: 224px; height: 224px;
+  margin-left: -112px; margin-top: -112px;
+  background: rgba(139, 92, 246, 0.05);
   border: none;
   transform-style: preserve-3d;
 }
 
-.face-front  { transform: translateZ(135px); }
-.face-back   { transform: rotateY(180deg) translateZ(135px); }
-.face-top    { transform: rotateX(90deg) translateZ(135px); }
-.face-bottom { transform: rotateX(-90deg) translateZ(135px); }
-.face-left   { transform: rotateY(-90deg) translateZ(135px); }
-.face-right  { transform: rotateY(90deg) translateZ(135px); }
+.face-front  { transform: translateZ(112px); }
+.face-back   { transform: rotateY(180deg) translateZ(112px); }
+.face-top    { transform: rotateX(90deg) translateZ(112px); }
+.face-bottom { transform: rotateX(-90deg) translateZ(112px); }
+.face-left   { transform: rotateY(-90deg) translateZ(112px); }
+.face-right  { transform: rotateY(90deg) translateZ(112px); }
 
 /* --- Wireframe edge lines (12 edges of the cube) --- */
 .edge-line {
   position: absolute;
-  background: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.5);
   transform-style: preserve-3d;
 }
 
 /* Horizontal edges in XY planes — full width */
-.edge-h { height: 2px; width: 270px; }
+.edge-h { height: 3px; width: 224px; }
 /* Vertical edges in XY planes — full height */
-.edge-v { width: 2px; height: 270px; }
+.edge-v { width: 3px; height: 224px; }
 /* Depth edges (along Z) — drawn as thin lines at corners */
-.edge-z { width: 2px; height: 2px; }
+.edge-z { width: 3px; height: 3px; background: rgba(167, 139, 250, 0.8); }
 
 #reset-btn {
   background: var(--brand-color);
@@ -241,24 +274,22 @@ select {
 @media (max-width: 520px) {
   .game-container { padding: 1.2rem; }
   h1 { font-size: 1.6rem; }
-  .board-3d-container { width: 300px; height: 300px; perspective: 900px; }
-  .cube {
-    width: 200px;
-    height: 200px;
-  }
-  /* Override for responsive frame size */
-  .face-plane { width: 200px; height: 200px; margin-left: -100px; margin-top: -100px; }
-  .edge-h     { width: 200px; }
-  .edge-v     { height: 200px; }
+  .board-3d-container { width: 340px; height: 340px; perspective: 900px; }
 
-  .layer {
-    grid-template-columns: repeat(3, 56px);
-    grid-template-rows: repeat(3, 56px);
-    gap: 4px;
-    padding: 4px;
+  .cube {
+    width: 180px;
+    height: 180px;
   }
-  .cell { width: 56px; height: 56px; font-size: 2rem; }
-  .layer[data-z="0"] { transform: translate(-50%, -50%) translateZ(-80px); }
-  .layer[data-z="1"] { transform: translate(-50%, -50%) translateZ(0px);  }
-  .layer[data-z="2"] { transform: translate(-50%, -50%) translateZ(80px); }
+
+  /* Adjust block size for mobile */
+  .block-wrapper { width: 46px; height: 46px; }
+  .block-face { width: 46px; height: 46px; margin-left: -23px; margin-top: -23px; border-radius: 8px; }
+
+  /* Cube frame faces */
+  .face-plane {
+    width: 150px;
+    height: 150px;
+    margin-left: -75px;
+    margin-top: -75px;
+  }
 }
