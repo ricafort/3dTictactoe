@@ -3,81 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tic-Tac-Toe AI</title>
-<style>
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  min-height: 100vh; background-color: #f8f9fa; margin: 0; color: #343a40;
-}
-h1 { color: #007bff; margin-bottom: 25px; }
-.status {
-  margin-bottom: 20px; font-size: 1.3em; font-weight: bold;
-  padding: 10px 20px; border-radius: 8px; text-align: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-.status.player-x-turn { background-color: #e0f7fa; color: #0056b3; }
-.status.player-o-turn { background-color: #ffebee; color: #c82333; }
-.status.winner { background-color: #d4edda; color: #218838; }
-.status.draw { background-color: #fff3cd; color: #e0a800; }
-#game-board {
-  display: grid;
-  grid-template-columns: repeat(3, 110px);
-  grid-template-rows: repeat(3, 110px);
-  gap: 6px; background-color: #343a40;
-  padding: 8px; border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-.cell {
-  width: 110px; height: 110px;
-  background-color: #ffffff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 3.5em; font-weight: bold;
-  cursor: pointer; border-radius: 8px;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  color: #495057;
-}
-.cell:hover { background-color: #e9ecef; transform: scale(1.02); }
-.cell.player-x { color: #007bff; }
-.cell.player-o { color: #dc3545; }
-#reset-btn {
-  margin-top: 25px;
-  padding: 14px 30px;
-  font-size: 1.2em;
-  background-color: #6c757d; color: white;
-  border: none; border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-#reset-btn:hover { background-color: #5a6268; transform: translateY(-1px); }
-#reset-btn:active { transform: translateY(1px); }
-</style>
+<title>3D Tic-Tac-Toe AI</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h1>Tic-Tac-Toe AI</h1>
-<div id="status-display" class="status"></div>
+<div class="game-container">
+  <h1>3D Tic-Tac-Toe</h1>
 
-<select id="difficulty-select">
-  <option value="easy" selected>Easy</option>
-  <option value="medium">Medium</option>
-  <option value="hard">Hard/Expert</option>
-</select>
+  <div id="status-display" class="status"></div>
 
-<div id="game-board">
-  <div class="cell" data-index="0"></div>
-  <div class="cell" data-index="1"></div>
-  <div class="cell" data-index="2"></div>
-  <div class="cell" data-index="3"></div>
-  <div class="cell" data-index="4"></div>
-  <div class="cell" data-index="5"></div>
-  <div class="cell" data-index="6"></div>
-  <div class="cell" data-index="7"></div>
-  <div class="cell" data-index="8"></div>
+  <select id="difficulty-select">
+    <option value="easy">Easy</option>
+    <option value="medium" selected>Medium</option>
+    <option value="hard">Hard/Expert</option>
+  </select>
+
+  <div class="rotation-controls">
+    <label for="rotateX-slider">Rotate X:</label>
+    <input type="range" id="rotateX-slider" min="-180" max="180" value="30">
+    <label for="rotateY-slider">Rotate Y:</label>
+    <input type="range" id="rotateY-slider" min="-180" max="180" value="45">
+  </div>
+
+  <div class="board-3d-container">
+    <div class="cube" id="tic-tac-toe-cube"></div>
+  </div>
+
+  <button id="reset-btn">Reset Game</button>
 </div>
-
-<button id="reset-btn">Reset Game</button>
 <script src="script.js"></script>
 </body>
 </html>
