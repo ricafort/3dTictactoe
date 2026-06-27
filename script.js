@@ -11,16 +11,33 @@
   var TOTAL_CELLS = SIZE * SIZE * SIZE; // 27
   var PLAYER_X = 'X';
   var PLAYER_O = 'O';
-
   // Cell block dimensions (used in rendering)
   var CELL_SIZE = 68;
   var GAP = 10;
-  var STEP = CELL_SIZE + GAP;   // center-to-center step between blocks
-  // Total edge length of the big cube: SIZE cells * STEP minus one gap
-  var CUBE_SIDE = SIZE * STEP - GAP;   // ~224px
-  // Half-edge used for frame positioning and block offsets (centered origin)
-  var CUBE_HALF = Math.round(SIZE * STEP / 2);   // ~117px
+  var STEP = CELL_SIZE + GAP; // center-to-center step between blocks
+  // Total edge length of the big cube (must match CSS .cube, .face-plane, .edge-h/v)
+  var CUBE_SIDE = 224;
+  // Half-edge used for frame positioning and block offsets (must match CSS .face-plane margin/translateZ)
+  var CUBE_HALF = 112;
 
+  // --- Game State ---
+  var board = new Array(TOTAL_CELLS).fill('');
+=======
+var CELL_SIZE = 68;
+var GAP = 10;
+var STEP = CELL_SIZE + GAP;   // center-to-center step between blocks
+// Total edge length of the big cube: SIZE cells * STEP minus one gap
+var CUBE_SIDE = SIZE * STEP - GAP;   // ~224px
+// Half-edge used for frame positioning and block offsets (centered origin)
+var CUBE_HALF = Math.round(SIZE * STEP / 2);   // ~117px
+++
+var CELL_SIZE = 68;
+var GAP = 10;
+var STEP = CELL_SIZE + GAP; // center-to-center step between blocks
+// Total edge length of the big cube (must match CSS .cube, .face-plane, .edge-h/v)
+var CUBE_SIDE = 224;
+// Half-edge used for frame positioning and block offsets (must match CSS .face-plane margin/translateZ)
+var CUBE_HALF = 112;
   // --- Game State ---
   var board = new Array(TOTAL_CELLS).fill('');
   var currentPlayer = PLAYER_X;
