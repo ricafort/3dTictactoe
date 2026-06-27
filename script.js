@@ -129,9 +129,9 @@
         xyzToIndex(x, 2, 2)
       ]);
       lines.push([
-        xyzToIndex(x, 2, 0),
+        xyzToIndex(x, 0, 2),
         xyzToIndex(x, 1, 1),
-        xyzToIndex(x, 0, 2)
+        xyzToIndex(x, 2, 0)
       ]);
     }
 
@@ -298,8 +298,8 @@
   function prioritizeMoves(emptyCells) {
     var priorityOrder = [
       13, // Center
-      0, 2, 6, 8, 18, 20, 24, 26, // Corners
-      1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25 // Edges
+      0, 2, 6, 8, 18, 20, 24, 26, // Corners (all 3 layers)
+      1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25 // Edges (all 3 layers)
     ];
     var result = [];
     for (var i = 0; i < priorityOrder.length; i++) {
