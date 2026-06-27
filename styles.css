@@ -107,9 +107,9 @@ select {
 /* ============================================================ */
 
 .board-3d-container {
-  width: 400px; /* Adjusted for tighter fit and more pronounced 3D effect */
-  height: 400px;
-  perspective: 1000px; /* Reduced for a more pronounced 3D effect */
+  width: 380px; /* Adjusted for tighter fit and more pronounced 3D effect */
+  height: 380px;
+  perspective: 800px; /* Reduced for a more pronounced 3D effect */
   margin: 0 auto 1.5rem auto;
   display: flex;
   justify-content: center;
@@ -118,8 +118,8 @@ select {
 
 /* The main cube wrapper — holds blocks + frame */
 .cube {
-  width: <NRP>; /* CUBE_SIDE from JS */
-  height: <NRP>; /* CUBE_SIDE from JS */
+  width: <NRP>; /* CUBE_SIDE from JS (224px) */
+  height: <NRP>; /* CUBE_SIDE from JS (224px) */
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.15s ease-out;
@@ -161,23 +161,23 @@ select {
   height: 68px; /* CELL_SIZE from JS */
   margin-left: -34px; /* -CELL_SIZE/2 */
   margin-top: -34px;  /* -CELL_SIZE/2 */
-  border-radius: 10px;
+  border-radius: 8px; /* Sharper edges for cube look */
   backface-visibility: hidden; /* Hide back faces */
 }
 
 /* Front face — the main clickable display surface */
 .block-front {
-  background: linear-gradient(165deg, #324a6e, #24344d); /* Slightly brighter */
-  border: 3px solid var(--cell-border); /* Thicker border */
+  background: linear-gradient(165deg, #3a567e, #2c405c); /* Stronger gradient */
+  border: 2px solid var(--cell-border); /* Consistent border */
   box-shadow:
     inset 0 -4px 8px rgba(0, 0, 0, 0.3),
-    inset 0 2px 6px rgba(255, 255, 255, 0.06);
+    inset 0 2px 6px rgba(255, 255, 255, 0.1); /* Slightly more highlight */
 }
 
 /* Top face — lighter for "lit from above" depth cue */
 .block-top {
-  background: linear-gradient(180deg, #4a648b, #3b4f74); /* Brighter top */
-  border: 1px solid rgba(139, 216, 240, 0.35); /* More defined border */
+  background: linear-gradient(180deg, #5b79a6, #4a648b); /* Even brighter top */
+  border: 1px solid rgba(139, 216, 240, 0.4); /* More defined border */
 }
 
 /* Right face — darker for shadowed side */
@@ -225,8 +225,8 @@ select {
 .face-plane {
   position: absolute;
   top: 50%; left: 50%;
-  width: <NRP>; /* CUBE_SIDE from JS */
-  height: <NRP>; /* CUBE_SIDE from JS */
+  width: <NRP>; /* CUBE_SIDE from JS (224px) */
+  height: <NRP>; /* CUBE_SIDE from JS (224px) */
   margin-left: -112px; /* -CUBE_HALF from JS */
   margin-top: -112px;  /* -CUBE_HALF from JS */
   background: rgba(139, <DATE_TIME>, 246, 0.05); /* Very subtle purple tint */
@@ -244,16 +244,16 @@ select {
 /* --- Wireframe edge lines (12 edges of the cube) --- */
 .edge-line {
   position: absolute;
-  background: rgba(139, <DATE_TIME>, 246, <DATE_TIME>); /* More opaque purple */
+  background: rgba(139, <DATE_TIME>, 246, 0.8); /* Even more opaque purple */
   transform-style: preserve-3d;
 }
 
 /* Horizontal edges in XY planes - full width */
-.edge-h { height: 4px; width: <NRP>; } /* CUBE_SIDE - thicker */
+.edge-h { height: 3px; width: <NRP>; } /* CUBE_SIDE - cleaner lines */
 /* Vertical edges in XY planes - full height */
-.edge-v { width: 4px; height: <NRP>; } /* CUBE_SIDE - thicker */
+.edge-v { width: 3px; height: <NRP>; } /* CUBE_SIDE - cleaner lines */
 /* Depth edges (along Z) - drawn as thin lines at corners */
-.edge-z { width: 4px; height: 4px; background: rgba(167, <DATE_TIME>, 250, 0.9); } /* Thicker and more opaque */
+.edge-z { width: 3px; height: 3px; background: rgba(167, <DATE_TIME>, 250, 0.95); } /* Slightly more opaque */
 
 #reset-btn {
   background: var(--brand-color);
@@ -279,11 +279,11 @@ select {
 @media (max-width: <NRP>) {
   .game-container { padding: 1.2rem; }
   <US_DRIVER_LICENSE> { font-size: 1.6rem; }
-  .board-3d-container { width: 300px; height: 300px; perspective: 800px; } /* Adjusted for mobile */
+  .board-3d-container { width: 280px; height: 280px; perspective: 600px; } /* Adjusted for mobile */
 
   .cube {
-    width: <NRP>;  /* Mobile CUBE_SIDE */
-    height: <NRP>; /* Mobile CUBE_SIDE */
+    width: <NRP>;  /* Mobile CUBE_SIDE (158px) */
+    height: <NRP>; /* Mobile CUBE_SIDE (158px) */
   }
 
   /* Adjust block size for mobile */
@@ -292,13 +292,13 @@ select {
 
   /* Cube frame faces (mobile) */
   .face-plane {
-    width: <NRP>;  /* Mobile CUBE_SIDE */
-    height: <NRP>; /* Mobile CUBE_SIDE */
-    margin-left: -79px; /* Mobile CUBE_HALF */
-    margin-top: -79px;  /* Mobile CUBE_HALF */
+    width: <NRP>;  /* Mobile CUBE_SIDE (158px) */
+    height: <NRP>; /* Mobile CUBE_SIDE (158px) */
+    margin-left: -79px; /* Mobile CUBE_HALF (79px) */
+    margin-top: -79px;  /* Mobile CUBE_HALF (79px) */
   }
 
   /* Mobile wireframe edges */
-  .edge-h { height: 4px; width: <NRP>; } /* Mobile CUBE_SIDE - thicker */
-  .edge-v { height: 4px; width: <NRP>; } /* Mobile CUBE_SIDE - thicker */
+  .edge-h { height: 3px; width: <NRP>; } /* Mobile CUBE_SIDE - thinner */
+  .edge-v { height: 3px; width: <NRP>; } /* Mobile CUBE_SIDE - thinner */
 }
