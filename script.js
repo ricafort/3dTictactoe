@@ -129,9 +129,9 @@
         xyzToIndex(x, 2, 2)
       ]);
       lines.push([
-        xyzToIndex(x, 0, 2),
+        xyzToIndex(x, 2, 0),
         xyzToIndex(x, 1, 1),
-        xyzToIndex(x, 2, 0)
+        xyzToIndex(x, 0, 2)
       ]);
     }
 
@@ -304,7 +304,7 @@
     var result = [];
     for (var i = 0; i < priorityOrder.length; i++) {
       if (emptyCells.indexOf(priorityOrder[i]) !== -1) {
-        result.push(emptyCells[i]);
+        result.push(priorityOrder[i]);
       }
     }
     for (var j = 0; j < emptyCells.length; j++) {
@@ -367,29 +367,24 @@
 
       if (moveVal >= 10) return cell;
 
+      if (moveVal > bestVal) { bestVal = moveVal; bestMove = cell; }
+    }
 
-    var half = CUBE_HALF;
-    // Bottom face (4 edges, z=-half)
-    addEdge('edge-h', 0, -half, -half); // Bottom-Front
-    addEdge('edge-h', 0, -half, half);  // Bottom-Back
-    addEdge('edge-v', -half, 0, -half); // Bottom-Left
-    addEdge('edge-v', half, 0, -half);  // Bottom-Right
-
-    // Top face (4 edges, z=+half)
-    addEdge('edge-h', 0, half, -half);  // Top-Front
-    addEdge('edge-h', 0, half, half);   // Top-Back
-    addEdge('edge-v', -half, 0, half);  // Top-Left
-    addEdge('edge-v', half, 0, half);   // Top-Right
-
-    // Connecting edges (4 pillars along Z)
-    addEdge('edge-z', -half, -half, 0); // Front-Left
-    addEdge('edge-z', half, -half, 0);  // Front-Right
-    addEdge('edge-z', -half, half, 0);  // Back-Left
-    addEdge('edge-z', half, half, 0);   // Back-Right
-
-    cubeElement.prepend(frame);
+    if (!bestMove || board[bestMove] !== '') {
+      bestMove = emptyCells[0];
+    }
+    return bestMove;
   }
-<<<<<<< END
+
+  // ============================================================
+  // CUBE FRAME OVERLAY (wireframe edges + face planes)
+  // Uses the computed cube dimensions so frame matches blocks.
+  // ============================================================
+
+  function createCubeFrame() {
+    var frame = document.createElement('div');
+    frame.className = 'cube-frame';
+
     var faces = [
       { name: 'front',  transform: 'translateZ(' + CUBE_HALF + 'px)' },
       { name: 'back',   transform: 'rotateY(180deg) translateZ(' + CUBE_HALF + 'px)' },
@@ -402,6 +397,7 @@
     for (var f = 0; f < faces.length; f++) {
       var plane = document.createElement('div');
       plane.className = 'face-plane face-' + faces[f].name;
+      plane.style.transform = faces[f].transform; // Set transform from JS
       frame.appendChild(plane);
     }
 
@@ -414,20 +410,22 @@
 
     var half = CUBE_HALF;
     // Bottom face (4 edges, z=-half)
-    addEdge('edge-h', -half, -half, -half);
-    addEdge('edge-v', -half, -half, -half);
-    addEdge('edge-h', half, -half, -half);
-    addEdge('edge-v', half, -half, -half);
+    addEdge('edge-h', 0, -half, -half);  // Bottom-Front (center X, bottom Y, front Z)
+    addEdge('edge-h', 0, -half, half);   // Bottom-Back
+    addEdge('edge-v', -half, 0, -half);  // Bottom-Left (left X, center Y, front Z)
+    addEdge('edge-v', half, 0, -half);   // Bottom-Right
+
     // Top face (4 edges, z=+half)
-    addEdge('edge-h', -half, half, half);
-    addEdge('edge-v', -half, half, half);
-    addEdge('edge-h', half, half, half);
-    addEdge('edge-v', half, half, half);
+    addEdge('edge-h', 0, half, -half);   // Top-Front
+    addEdge('edge-h', 0, half, half);    // Top-Back
+    addEdge('edge-v', -half, 0, half);   // Top-Left
+    addEdge('edge-v', half, 0, half);    // Top-Right
+
     // Connecting edges (4 pillars along Z)
-    addEdge('edge-z', -half, -half, 0);
-    addEdge('edge-z', half, -half, 0);
-    addEdge('edge-z', -half, half, 0);
-    addEdge('edge-z', half, half, 0);
+    addEdge('edge-z', -half, -half, 0); // Front-Left
+    addEdge('edge-z', half, -half, 0);  // Front-Right
+    addEdge('edge-z', -half, half, 0);  // Back-Left
+    addEdge('edge-z', half, half, 0);   // Back-Right
 
     cubeElement.prepend(frame);
   }
@@ -698,3 +696,4 @@
   });
 
 })();
+<<<<<<< END
