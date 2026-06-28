@@ -166,37 +166,44 @@ button:hover, select:hover {
   transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Default empty block faces */
+/* Default empty block faces - SHINY GOLD VERSION */
 .block-front {
-  background: linear-gradient(165deg, #f8fafc, #e2e8f0);
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 -2px 4px rgba(255, 255, 255, 0.8);
+  background: linear-gradient(165deg, #FFF8DC, #FFD700);
+  border: 2px solid #A67C00;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6), inset 0 -2px 6px rgba(139, 107, 8, 0.4), inset 2px 0 4px rgba(255, 255, 255, 0.3);
   transform: rotateY(0deg) translateZ(34px);
 }
 .block-top {
-  background: linear-gradient(180deg, #cbd5e1, #94a3b8);
-  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(180deg, #FFFDE7, #FFD700);
+  border: 2px solid #A67C00;
   transform: rotateX(90deg) translateZ(34px);
 }
 .block-right {
-  background: linear-gradient(180deg, #94a3b8, #64748b);
-  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(180deg, #FFF3B0, #DAA520);
+  border: 2px solid #A67C00;
   transform: rotateY(90deg) translateZ(34px);
 }
 .block-back {
-  background: linear-gradient(165deg, #cbd5e1, #94a3b8);
-  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(165deg, #FFD700, #B8860B);
+  border: 2px solid #A67C00;
   transform: rotateY(180deg) translateZ(34px);
 }
 .block-bottom {
-  background: linear-gradient(180deg, #64748b, #475569);
-  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(180deg, #B8860B, #8B6914);
+  border: 2px solid #A67C00;
   transform: rotateX(-90deg) translateZ(34px);
 }
 .block-left {
-  background: linear-gradient(180deg, #94a3b8, #64748b);
-  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(180deg, #FFF3B0, #DAA520);
+  border: 2px solid #A67C00;
   transform: rotateY(-90deg) translateZ(34px);
+}
+
+.block-face.winning-line {
+  background: linear-gradient(165deg, var(--win-glow-color), #0f6e4a) !important;
+  border-color: #0f6e4a !important;
+  box-shadow: 0 0 15px var(--win-glow-color), inset 0 0 10px var(--win-glow-color);
+  filter: brightness(1.5) contrast(1.2);
 }
 
 /* --- Player X styling (ENTIRE block changes color) --- */
@@ -204,42 +211,6 @@ button:hover, select:hover {
   background: linear-gradient(165deg, #fecaca, #fca5a5); /* Bright red */
   border-color: #b91c1c;
   color: #7f1d1d;
-}
-
-/* Default empty block faces */
-.block-front {
-  background: linear-gradient(165deg, #f0f0f0, #d0d0d0); /* Shiny silver */
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 -2px 4px rgba(255, 255, 255, 0.8);
-  transform: rotateY(0deg) translateZ(34px);
-}
-.block-face.winning-line {
-.block-top {
-  background: linear-gradient(180deg, #e0e0e0, #c0c0c0); /* Shiny silver */
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  transform: rotateX(90deg) translateZ(34px);
-}
-.block-right {
-  background: linear-gradient(180deg, #c0c0c0, #a0a0a0); /* Shiny silver */
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  transform: rotateY(90deg) translateZ(34px);
-}
-.block-back {
-  background: linear-gradient(165deg, #e0e0e0, #c0c0c0); /* Shiny silver */
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  transform: rotateY(180deg) translateZ(34px);
-}
-.block-bottom {
-  background: linear-gradient(180deg, #a0a0a0, #808080); /* Shiny silver */
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  transform: rotateX(-90deg) translateZ(34px);
-}
-.block-left {
-  background: linear-gradient(180deg, #c0c0c0, #a0a0a0); /* Shiny silver */
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  transform: rotateY(-90deg) translateZ(34px);
-}
-  backface-visibility: visible;
 }
 
 .face-front  { transform: translateZ(112px); }
@@ -277,8 +248,8 @@ button:hover, select:hover {
   }
 
   .edge-h { height: 3px; width: 158px; margin-left: -79px; margin-top: -1.5px; }
-  .edge-v { width: 3px; height: 158px; margin-left: -1.5px; margin-top: -79px; }
-  .edge-z { width: 3px; height: 158px; margin-left: -1.5px; margin-top: -79px; transform-origin: center; transform: rotateX(90deg); }
+  .edge-v { width: 3px; height: 158px; margin-left: -1.5px; margin-top: -112px; }
+  .edge-z { width: 3px; height: 158px; margin-left: -1.5px; margin-top: -112px; transform-origin: center; transform: rotateX(90deg); }
 
   .block-wrapper {
     width: 48px; height: 48px;
