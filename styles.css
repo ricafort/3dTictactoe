@@ -72,12 +72,12 @@ select {
 /* ============================================================ */
 /*                   3D BOARD CONTAINER                         */
 /* ============================================================ */
-.block-wrapper {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 68px; /* CELL_SIZE from JS */
-  height: 68px; /* CELL_SIZE from JS */
-  cursor: pointer;
+
+.board-3d-container {
+  width: 380px; /* Adjusted for tighter fit and more pronounced 3D effect */
+  height: 380px;
+  perspective: 600px; /* Further reduced for a more pronounced 3D effect */
+  margin: 0 auto 1.5rem auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -99,10 +99,15 @@ select {
 /*                   INDIVIDUAL BLOCK (small cube)                */
 /* ============================================================ */
 
+/* Centered at origin of .cube via top/left 50% and negative margins */
 .block-wrapper {
   position: absolute;
+  top: 50%;
+  left: 50%;
   width: 68px; /* CELL_SIZE from JS */
   height: 68px; /* CELL_SIZE from JS */
+  margin-left: -34px; /* -CELL_SIZE/2 to center the block */
+  margin-top: -34px;  /* -CELL_SIZE/2 to center the block */
   cursor: pointer;
   transform-style: preserve-3d; /* Needed for faces to be 3D children */
   transition: transform 0.2s ease-out, filter 0.25s ease;
@@ -140,19 +145,12 @@ select {
   background: linear-gradient(165deg, #42608a, #334155); /* Even stronger gradient */
   border: 3px solid var(--cell-border); /* Slightly thicker border for definition */
   box-shadow:
-.edge-line {
-  position: absolute;
-  top: 50%; left: 50%;
-  background: rgba(139, 92, 246, 0.9); /* Almost opaque purple */
-  transform-style: preserve-3d;
+    inset 0 -4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 6px rgba(255, 255, 255, 0.15); /* More highlight */
 }
 
-/* Horizontal edges in XY planes - full width */
-.edge-h { height: 4px; width: 224px; margin-left: -112px; margin-top: -2px; }
-/* Vertical edges in XY planes - full height */
-.edge-v { width: 4px; height: 224px; margin-left: -2px; margin-top: -112px; }
-/* Depth edges (along Z) - drawn as thin lines at corners */
-.edge-z { width: 4px; height: 4px; background: rgba(167, 139, 250, 1.0); margin-left: -2px; margin-top: -2px; }
+/* Top face — lighter for "lit from above" depth cue */
+.block-top {
   background: linear-gradient(180deg, #6c8dbd, #5b79a6); /* Much brighter top */
   border: 1px solid rgba(139, 216, 240, 0.5); /* Even more defined border */
 }
@@ -221,16 +219,17 @@ select {
 /* --- Wireframe edge lines (12 edges of the cube) --- */
 .edge-line {
   position: absolute;
+  top: 50%; left: 50%;
   background: rgba(139, 92, 246, 0.9); /* Almost opaque purple */
   transform-style: preserve-3d;
 }
 
 /* Horizontal edges in XY planes - full width */
-.edge-h { height: 4px; width: 224px; } /* CUBE_SIDE - thicker for more impact */
+.edge-h { height: 4px; width: 224px; margin-left: -112px; margin-top: -2px; }
 /* Vertical edges in XY planes - full height */
-.edge-v { width: 4px; height: 224px; } /* CUBE_SIDE - thicker for more impact */
+.edge-v { width: 4px; height: 224px; margin-left: -2px; margin-top: -112px; }
 /* Depth edges (along Z) - drawn as thin lines at corners */
-.edge-z { width: 4px; height: 4px; background: rgba(167, 139, 250, 1.0); } /* Fully opaque */
+.edge-z { width: 4px; height: 4px; background: rgba(167, 139, 250, 1.0); margin-left: -2px; margin-top: -2px; }
 
 #reset-btn {
   background: var(--brand-color);
@@ -264,7 +263,7 @@ select {
   }
 
   /* Adjust block size for mobile */
-  .block-wrapper { width: 46px; height: 46px; }
+  .block-wrapper { width: 46px; height: 46px; margin-left: -23px; margin-top: -23px; }
   .block-face { width: 46px; height: 46px; margin-left: -23px; margin-top: -23px; border-radius: 8px; }
 
   /* Cube frame faces (mobile) */
@@ -276,6 +275,6 @@ select {
   }
 
   /* Mobile wireframe edges */
-  .edge-h { height: 4px; width: 158px; } /* Mobile CUBE_SIDE - thicker */
-  .edge-v { height: 4px; width: 158px; } /* Mobile CUBE_SIDE - thicker */
+  .edge-h { height: 4px; width: 158px; margin-left: -79px; margin-top: -2px; }
+  .edge-v { height: 4px; width: 158px; margin-left: -2px; margin-top: -79px; }
 }
