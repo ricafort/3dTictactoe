@@ -123,36 +123,37 @@ button:hover, select:hover {
 
 /* ============================================================ */
 /*                   INDIVIDUAL BLOCK (small cube)                */
-/* ============================================================ */
-
-.block-wrapper {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 68px;
-  height: 68px;
-  margin-left: -34px;
-  margin-top: -34px;
-  cursor: pointer;
-  transform-style: preserve-3d;
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), filter 0.25s ease;
+.block-front {
+  background: linear-gradient(165deg, #E0F2FE, #3B82F6);
+  border: 2px solid #003366;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6), inset 0 -2px 6px rgba(0, 51, 102, 0.4), inset 2px 0 4px rgba(255, 255, 255, 0.3);
+  transform: rotateY(0deg) translateZ(34px);
 }
-
-/* --- Hover Highlight: Bright drop-shadow on the whole block --- */
-.block-wrapper:not(.occupied):hover {
-  filter: drop-shadow(0 0 8px var(--brand-color));
+.block-top {
+  background: linear-gradient(180deg, #F0F9FF, #60A5FA);
+  border: 2px solid #003366;
+  transform: rotateX(90deg) translateZ(34px);
 }
-
-/* Hover highlight for empty cells */
-.block-wrapper:not(.occupied):hover .block-face {
-  border-color: var(--brand-color);
+.block-right {
+  background: linear-gradient(180deg, #BFDBFE, #2563EB);
+  border: 2px solid #003366;
+  transform: rotateY(90deg) translateZ(34px);
 }
-
-.block-wrapper.occupied {
-  cursor: default;
+.block-back {
+  background: linear-gradient(165deg, #3B82F6, #1D4ED8);
+  border: 2px solid #003366;
+  transform: rotateY(180deg) translateZ(34px);
 }
-
-/* --- Faces of the small block --- */
+.block-bottom {
+  background: linear-gradient(180deg, #1D4ED8, #1E3A8A);
+  border: 2px solid #003366;
+  transform: rotateX(-90deg) translateZ(34px);
+}
+.block-left {
+  background: linear-gradient(180deg, #BFDBFE, #2563EB);
+  border: 2px solid #003366;
+  transform: rotateY(-90deg) translateZ(34px);
+}
 .block-face {
   position: absolute;
   top: 50%; left: 50%;
