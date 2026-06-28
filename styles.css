@@ -61,7 +61,9 @@ h1 {
 .status.winner { color: var(--win-glow-color); }
 .status.draw   { color: #fbbf24; }
 .status.player-x-turn { color: var(--player-x-color); }
-.status.player-o-turn { color: var(--player-o-color); }
+.status.player-o-turn { color: var(
+  
+); }
 
 .controls {
   display: flex;
