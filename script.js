@@ -90,6 +90,7 @@
 
   // Rotation variables
   let isDragging = false;
+  let wasDragging = false; // Distinguish between a click and a drag
   let lastX, lastY;
 
   // ------------------------------------------------------------
@@ -218,6 +219,12 @@
   }
 
   function handleClick(event) {
+    // If the user was dragging, ignore the click event
+    if (wasDragging) {
+      wasDragging = false;
+      return;
+    }
+
     if (!gameActive || currentPlayer === 'O') return; // Prevent clicks during AI turn
 
     const blockWrapper = event.target.closest('.block-wrapper');
@@ -409,27 +416,33 @@
   // ------------------------------------------------------------
 
   function setupEventListeners() {
-    // Cube rotation
+    // --- Mouse Drag Rotation & Click Handling ---
     cubeElement.addEventListener('mousedown', (e) => {
-      if (e.button === 2) { // Right click for rotation
-        e.preventDefault(); // Prevent context menu
-        isDragging = true;
-        lastX = e.clientX;
-        lastY = e.clientY;
-        cubeElement.style.cursor = 'grabbing';
-      }
+      // Start tracking a potential drag
+      isDragging = true;
+      wasDragging = false;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      cubeElement.style.cursor = 'grabbing';
     });
 
     document.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
+      
       const deltaX = e.clientX - lastX;
       const deltaY = e.clientY - lastY;
 
-      rotationY += deltaX * 0.5; // Rotate around Y-axis for horizontal mouse movement
-      rotationX -= deltaY * 0.5; // Rotate around X-axis for vertical mouse movement
-      rotationX = Math.max(-90, Math.min(90, rotationX)); // Limit X rotation to avoid flipping
+      // If mouse moved more than 3px, treat it as a drag (not a click)
+      if (!wasDragging && (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3)) {
+        wasDragging = true;
+      }
 
-      applyCubeRotation();
+      if (wasDragging) {
+        rotationY += deltaX * 0.5; // Rotate around Y-axis for horizontal mouse movement
+        rotationX -= deltaY * 0.5; // Rotate around X-axis for vertical mouse movement
+        rotationX = Math.max(-90, Math.min(90, rotationX)); // Limit X rotation to avoid flipping
+        applyCubeRotation();
+      }
 
       lastX = e.clientX;
       lastY = e.clientY;
@@ -443,10 +456,11 @@
     // Prevent context menu on right-click drag
     cubeElement.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // Basic touch rotation (simplified)
+    // --- Touch Rotation ---
     cubeElement.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) { // Single touch for rotation
         isDragging = true;
+        wasDragging = false;
         lastX = e.touches[0].clientX;
         lastY = e.touches[0].clientY;
       }
@@ -455,14 +469,21 @@
     cubeElement.addEventListener('touchmove', (e) => {
       if (!isDragging || e.touches.length !== 1) return;
       e.preventDefault(); // Prevent scrolling
+      
       const deltaX = e.touches[0].clientX - lastX;
       const deltaY = e.touches[0].clientY - lastY;
 
-      rotationY += deltaX * 0.5;
-      rotationX -= deltaY * 0.5;
-      rotationX = Math.max(-90, Math.min(90, rotationX));
+      // If touch moved more than 3px, treat it as a drag (not a tap/click)
+      if (!wasDragging && (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3)) {
+        wasDragging = true;
+      }
 
-      applyCubeRotation();
+      if (wasDragging) {
+        rotationY += deltaX * 0.5;
+        rotationX -= deltaY * 0.5;
+        rotationX = Math.max(-90, Math.min(90, rotationX));
+        applyCubeRotation();
+      }
 
       lastX = e.touches[0].clientX;
       lastY = e.touches[0].clientY;
