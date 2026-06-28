@@ -125,6 +125,12 @@ select {
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), filter 0.25s ease;
 }
 
+/* Highlight the ENTIRE block on hover (pop-out + brightness) */
+.block-wrapper:not(.occupied):hover {
+  filter: brightness(1.3);
+  /* Note: We apply scale via JS or just rely on brightness/border to avoid breaking 3D layout */
+}
+
 /* Hover highlight for empty cells */
 .block-wrapper:not(.occupied):hover .block-front {
   border-color: var(--brand-color);
@@ -147,7 +153,6 @@ select {
   margin-left: -34px;
   margin-top: -34px;
   border-radius: 4px;
-  /* Removed backface-visibility to prevent accidental culling */
 }
 
 /* Front face — bright white/grey for high contrast */
@@ -167,6 +172,24 @@ select {
 
 /* Right face — bright grey */
 .block-right {
+  background: linear-gradient(180deg, #94a3b8, #64748b);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+/* Back face — slightly darker for depth */
+.block-back {
+  background: linear-gradient(165deg, #cbd5e1, #94a3b8);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+/* Bottom face — darkest for shadow */
+.block-bottom {
+  background: linear-gradient(180deg, #64748b, #475569);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+/* Left face — medium dark */
+.block-left {
   background: linear-gradient(180deg, #94a3b8, #64748b);
   border: 2px solid rgba(255, 255, 255, 0.9);
 }
