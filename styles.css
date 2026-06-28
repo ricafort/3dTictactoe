@@ -32,8 +32,24 @@ body {
 }
 
 /* ============================================================ */
+/*                     GAME CONTAINER (UI Layer)                  */
+/* ============================================================ */
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 10; /* Ensure UI sits above the 3D scene */
+}
+
+/* ============================================================ */
 /*                        UI CONTROLS                             */
 /* ============================================================ */
+h1 {
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
 .status {
   font-size: 1.5rem;
   font-weight: bold;
@@ -50,7 +66,7 @@ body {
 .controls {
   display: flex;
   gap: 1rem;
-  margin-top: 1.5rem;
+  margin-bottom: 2rem; /* Space between controls and cube */
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
@@ -72,22 +88,30 @@ button:hover, select:hover {
   border-color: var(--brand-color);
 }
 
+.instruction {
+  margin-top: 2rem; /* Space between cube and instruction */
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
 /* ============================================================ */
-/*                     CUBE CONTAINER                              */
+/*                   3D BOARD CONTAINER                            */
 /* ============================================================ */
-.cube-container {
+.board-3d-container {
   perspective: 1200px;
   width: 300px;
   height: 300px;
-  margin: 2rem auto;
+  margin: 1rem 0; /* Vertical spacing */
+  position: relative;
 }
 
 .cube {
   width: 100%;
   height: 100%;
-  position: relative;
+  position: absolute; /* Removed from flow to allow free rotation */
+  top: 0; left: 0;
   transform-style: preserve-3d;
-  transition: transform 0.15s ease-out;
+  transition: transform 0.1s linear; /* Smoother drag */
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
@@ -119,7 +143,7 @@ button:hover, select:hover {
   filter: drop-shadow(0 0 8px var(--brand-color));
 }
 
-/* Hover highlight for empty cells (optional extra brightness) */
+/* Hover highlight for empty cells */
 .block-wrapper:not(.occupied):hover .block-face {
   border-color: var(--brand-color);
 }
@@ -138,7 +162,7 @@ button:hover, select:hover {
   margin-top: -34px;
   border-radius: 4px;
   transform-style: preserve-3d;
-  backface-visibility: hidden; /* Hide back of text/player mark when rotating */
+  backface-visibility: hidden;
   transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -241,7 +265,7 @@ button:hover, select:hover {
 /*                       RESPONSIVE                               */
 /* ============================================================ */
 @media (max-width: 768px) {
-  .cube-container {
+  .board-3d-container {
     width: 220px;
     height: 220px;
   }
@@ -254,7 +278,6 @@ button:hover, select:hover {
   }
 
   .edge-h { height: 3px; width: 158px; margin-left: -79px; margin-top: -1.5px; }
-  /* Fixed dimensions for vertical edges on mobile */
   .edge-v { width: 3px; height: 158px; margin-left: -1.5px; margin-top: -79px; }
   .edge-z { width: 3px; height: 158px; margin-left: -1.5px; margin-top: -79px; transform-origin: center; transform: rotateX(90deg); }
 
