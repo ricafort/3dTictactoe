@@ -1095,3 +1095,10 @@
 [2026-06-28 12:36:56] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
 [2026-06-28 12:36:56] react_task completed: payload={'approved': True}
 [2026-06-28 12:36:56] React approval result: approved=True
+[2026-06-28 13:14:38] Awaiting approval for tool=git_commit, path=None, diff_future_active=False
+[2026-06-28 13:14:38] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 13:14:38] react_task completed: payload={'type': 'open_file', 'path': '.'}
+[2026-06-28 13:14:38] Target path is directory, skip open_file forwarding: E:\TestProjects\tictactoe
+[2026-06-28 13:14:47] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 13:14:47] react_task completed: payload={'approved': True}
+[2026-06-28 13:14:47] React approval result: approved=True
