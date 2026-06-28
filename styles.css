@@ -112,14 +112,23 @@ button:hover {
     cursor: pointer;
 }
 
-/* --- Hover effect: glow on all visible faces of unoccupied blocks --- */
+/* --- Hover effect on unoccupied blocks: highlight all visible faces with glow and scale --- */
 .block-wrapper:not(.occupied):hover .block-face {
-    background: linear-gradient(165deg, rgba(59, 130, 246, 0.3), rgba(96, 165, 250, 0.15)) !important;
-    border-color: rgba(59, 130, 246, 0.8) !important;
+    background: linear-gradient(165deg, rgba(59, 130, 246, 0.25), rgba(96, 165, 250, 0.1)) !important;
+    border-color: #60a5fa !important;
     box-shadow:
-        inset 0 0 15px rgba(59, 130, 246, 0.4),
-        0 0 12px rgba(59, 130, 246, 0.6);
+        inset 0 0 18px rgba(59, 130, 246, 0.35),
+        0 0 14px rgba(59, 130, 246, 0.7);
+    transform: scale(1.08) translateZ(var(--z-offset));
 }
+
+/* Store original transforms with a custom property for hover scaling */
+.block-front { --z-offset: 34px; }
+.block-back  { --z-offset: 34px; }
+.block-top   { --z-offset: 34px; }
+.block-bottom { --z-offset: 34px; }
+.block-right { --z-offset: 34px; }
+.block-left  { --z-offset: 34px; }
 
 /* --- Faces of each small cube --- */
 .block-face {
@@ -132,7 +141,7 @@ button:hover {
     margin-top: -34px;
     backface-visibility: hidden; /* Hides the inside of faces */
     border-radius: 8px;
-    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 /* --- Front Face (default, empty) --- */
