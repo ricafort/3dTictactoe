@@ -1677,3 +1677,17 @@
 [2026-06-29 08:25:13] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
 [2026-06-29 08:25:13] react_task completed: payload={'approved': True}
 [2026-06-29 08:25:13] React approval result: approved=True
+[2026-06-29 08:25:54] Awaiting approval for tool=git_commit, path=None, diff_future_active=False
+[2026-06-29 08:25:54] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-29 08:25:54] react_task completed: payload={'type': 'open_file', 'path': 'approval_debug.log'}
+[2026-06-29 08:25:54] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-29 08:25:54] react_task completed: payload={'approved': True}
+[2026-06-29 08:25:54] React approval result: approved=True
+[2026-06-29 08:26:17] Awaiting approval for tool=git_branch, path=None, diff_future_active=False
+[2026-06-29 08:26:17] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-29 08:26:17] react_task completed: payload={'approved': True}
+[2026-06-29 08:26:17] React approval result: approved=True
+[2026-06-29 08:26:40] Awaiting approval for tool=git_branch, path=None, diff_future_active=False
+[2026-06-29 08:26:40] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-29 08:26:40] react_task completed: payload={'approved': True}
+[2026-06-29 08:26:40] React approval result: approved=True
