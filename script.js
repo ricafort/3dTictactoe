@@ -518,12 +518,12 @@
           var index = xyzToIndex(x, y, z);
           var block = buildBlock(x, y, z);
 
-          // Mark occupied cells and add 'occupied' class to wrapper
+          // Mark occupied cells: apply player class to the ENTIRE wrapper
           if (board[index] === PLAYER_X) {
-            block.querySelector('.block-front').classList.add('player-x');
+            block.classList.add('player-x');
             block.classList.add('occupied');
           } else if (board[index] === PLAYER_O) {
-            block.querySelector('.block-front').classList.add('player-o');
+            block.classList.add('player-o');
             block.classList.add('occupied');
           }
 
