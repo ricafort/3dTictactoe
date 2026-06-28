@@ -112,23 +112,14 @@ button:hover {
     cursor: pointer;
 }
 
-/* Hover effect on unoccupied blocks — highlight each visible face with glow + scale */
+/* Hover effect on unoccupied blocks — highlight each visible face with glow */
 .block-wrapper:not(.occupied):hover .block-face {
     background: linear-gradient(165deg, rgba(59, 130, 246, 0.3), rgba(96, 165, 250, 0.1)) !important;
     border-color: #60a5fa !important;
     box-shadow:
         inset 0 0 18px rgba(59, 130, 246, 0.3),
         0 0 14px rgba(59, 130, 246, 0.7);
-    transform: scale(1.1) var(--base-transform);
 }
-
-/* Store the original per-face rotation/translation as a custom property for hover scaling */
-.block-front { --base-transform: rotateY(0deg) translateZ(34px); }
-.block-back  { --base-transform: rotateY(180deg) translateZ(34px); }
-.block-top   { --base-transform: rotateX(90deg) translateZ(34px); }
-.block-bottom{ --base-transform: rotateX(-90deg) translateZ(34px); }
-.block-right { --base-transform: rotateY(90deg) translateZ(34px); }
-.block-left  { --base-transform: rotateY(-90deg) translateZ(34px); }
 
 /* --- Faces of each small cube --- */
 .block-face {
@@ -141,48 +132,48 @@ button:hover {
     margin-top: -34px;
     backface-visibility: hidden; /* Hides the inside of faces */
     border-radius: 8px;
-    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* --- Front Face (default, empty) --- */
 .block-front {
     background: linear-gradient(165deg, #f8fafc, #e2e8f0);
-    transform: var(--base-transform);
+    transform: rotateY(0deg) translateZ(34px);
     border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
 /* --- Back Face --- */
 .block-back {
     background: linear-gradient(165deg, #cbd5e1, #94a3b8);
-    transform: var(--base-transform);
+    transform: rotateY(180deg) translateZ(34px);
     border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
 /* --- Top Face --- */
 .block-top {
     background: linear-gradient(165deg, #e2e8f0, #cbd5e1);
-    transform: var(--base-transform);
+    transform: rotateX(90deg) translateZ(34px);
     border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
 /* --- Bottom Face --- */
 .block-bottom {
     background: linear-gradient(165deg, #94a3b8, #64748b);
-    transform: var(--base-transform);
+    transform: rotateX(-90deg) translateZ(34px);
     border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
 /* --- Right Face --- */
 .block-right {
     background: linear-gradient(165deg, #cbd5e1, #94a3b8);
-    transform: var(--base-transform);
+    transform: rotateY(90deg) translateZ(34px);
     border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
 /* --- Left Face --- */
 .block-left {
     background: linear-gradient(165deg, #94a3b8, #64748b);
-    transform: var(--base-transform);
+    transform: rotateY(-90deg) translateZ(34px);
     border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
@@ -287,10 +278,10 @@ button:hover {
     }
 
     /* Adjust face transforms for smaller blocks */
-    .block-front { transform: rotateY(0deg) translateZ(25px); --base-transform: rotateY(0deg) translateZ(25px); }
-    .block-back  { transform: rotateY(180deg) translateZ(25px); --base-transform: rotateY(180deg) translateZ(25px); }
-    .block-top   { transform: rotateX(90deg) translateZ(25px); --base-transform: rotateX(90deg) translateZ(25px); }
-    .block-bottom{ transform: rotateX(-90deg) translateZ(25px); --base-transform: rotateX(-90deg) translateZ(25px); }
-    .block-right { transform: rotateY(90deg) translateZ(25px); --base-transform: rotateY(90deg) translateZ(25px); }
-    .block-left  { transform: rotateY(-90deg) translateZ(25px); --base-transform: rotateY(-90deg) translateZ(25px); }
+    .block-front { transform: rotateY(0deg) translateZ(25px); }
+    .block-back  { transform: rotateY(180deg) translateZ(25px); }
+    .block-top   { transform: rotateX(90deg) translateZ(25px); }
+    .block-bottom{ transform: rotateX(-90deg) translateZ(25px); }
+    .block-right { transform: rotateY(90deg) translateZ(25px); }
+    .block-left  { transform: rotateY(-90deg) translateZ(25px); }
 }
