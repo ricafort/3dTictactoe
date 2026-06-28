@@ -443,15 +443,13 @@
     wrapper.dataset.index = xyzToIndex(x, y, z);
 
     // Position the block in 3D space (origin is center of the big cube)
-    // Corrected formulas to center the 3x3x3 grid perfectly
-    var txVal = (x - 1) * STEP;
-    var tyVal = (1 - y) * STEP;
+    // Since .block-wrapper is at left: 50%, top: 50%, we subtract half the cell size 
+    // to ensure the block's center is at the intended coordinate.
+    var txVal = (x - 1) * STEP - (CELL_SIZE / 2);
+    var tyVal = (1 - y) * STEP - (CELL_SIZE / 2);
     var tzVal = (z - 1) * STEP;
     
-    wrapper.style.transform =
-      'translateX(' + txVal + 'px)' +
-      ' translateY(' + tyVal + 'px)' +
-      ' translateZ(' + tzVal + 'px)';
+    wrapper.style.transform = `translate3d(${txVal}px, ${tyVal}px, ${tzVal}px)`;
     wrapper.style.transformStyle = 'preserve-3d';
 
     // --- Front face (the clickable X/O display surface) ---
@@ -697,3 +695,4 @@
   });
 
 })();
+<<<<<<< END
