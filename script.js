@@ -79,9 +79,8 @@
     let currentPlayer = 'X';
     let gameActive = true;
     let isExploded = false;
-    // Default diagonal (isometric) view showing top, front, and side faces
-    let rotationX = -28;
-    let rotationY = -45;
+    let rotationX = -28;  // Diagonal/isometric view showing top face
+    let rotationY = -45;   // Angled to show side face simultaneously
     let currentDifficulty = difficultySelect.value;
     let blockElements = []; // Store references to all block wrapper elements
     let blockElements = []; // Store references to all block wrapper elements
