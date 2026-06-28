@@ -5,743 +5,497 @@
 // ============================================================
 
 (function() {
+  // ------------------------------------------------------------
+  // Constants and DOM Elements
+  // ------------------------------------------------------------
+  const BOARD_SIZE = 3;
+  const NUM_CELLS = BOARD_SIZE * BOARD_SIZE * BOARD_SIZE; // 27
+  const CELL_SPACING = 74; // Distance between block centers (68px block size + 6px gap)
 
-  // --- Constants ---
-  var SIZE = 3;
-  var TOTAL_CELLS = SIZE * SIZE * SIZE; // 27
-  var PLAYER_X = 'X';
-  var PLAYER_O = 'O';
+  const statusDisplay = document.getElementById('status-display');
+  const cubeElement = document.getElementById('tic-tac-toe-cube');
+  const resetBtn = document.getElementById('reset-btn');
+  const explodeBtn = document.getElementById('explode-btn');
+  const difficultySelect = document.getElementById('difficulty-select');
 
-  // Cell block dimensions (used in rendering)
-  var CELL_SIZE = 68;
-  var GAP = 10;
-  var STEP = CELL_SIZE + GAP; // center-to-center step between blocks (78px)
-  
-  // Total edge length of the big cube (must match CSS .cube, .face-plane, .edge-h/v)
-  var CUBE_SIDE = 224;
-  // Half-edge used for frame positioning and block offsets
-  var CUBE_HALF = 112;
+  // All 49 winning lines for a 3x3x3 board
+  // Each array contains 3 cell indices that form a line
+  const WINNING_LINES = [
+    // 1. 27 Lines within each plane (XY, XZ, YZ)
+    // 1.1. 9 Rows (3 per Z-level)
+    // Z=0
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    // Z=1
+    [9, 10, 11], [12, 13, 14], [15, 16, 17],
+    // Z=2
+    [18, 19, 20], [21, 22, 23], [24, 25, 26],
 
-  // --- Game State ---
-  var board = new Array(TOTAL_CELLS).fill('');
-  var currentPlayer = PLAYER_X;
-  var isGameActive = true;
-  var winningLines = [];
-  var selectedDifficulty = 'medium';
+    // 1.2. 9 Columns (3 per Z-level)
+    // Z=0
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    // Z=1
+    [9, 12, 15], [10, 13, 16], [11, 14, 17],
+    // Z=2
+    [18, 21, 24], [19, 22, 25], [20, 23, 26],
 
-  // --- UI State ---
-  var isExploded = false;
+    // 1.3. 9 Pillars (vertical lines through Z)
+    [0, 9, 18], [1, 10, 19], [2, 11, 20],
+    [3, 12, 21], [4, 13, 22], [5, 14, 23],
+    [6, 15, 24], [7, 16, 25], [8, 17, 26],
 
-  // --- DOM References (populated on init) ---
-  var statusDisplay, resetButton, difficultySelect, cubeElement, explodeButton;
+    // 2. 12 Diagonal Lines within each face (XY, XZ, YZ)
+    // 2.1. 6 Diagonals on XY planes (2 per Z-level)
+    // Z=0
+    [0, 4, 8], [2, 4, 6],
+    // Z=1
+    [9, 13, 17], [11, 13, 15],
+    // Z=2
+    [18, 22, 26], [20, 22, 24],
 
-  // --- Drag state for rotation ---
-  var isDragging = false;
-  var dragStartX = 0, dragStartY = 0;
-  var rotationX = 30, rotationY = 45;   // current tilt angles (degrees)
+    // 2.2. 6 Diagonals on XZ planes (2 per Y-level)
+    // Y=0
+    [0, 10, 20], [2, 10, 18],
+    // Y=1
+    [3, 13, 23], [5, 13, 21],
+    // Y=2
+    [6, 16, 26], [8, 16, 24],
 
-  // ============================================================
-  // INDEXING HELPERS
-  // ============================================================
+    // 2.3. 6 Diagonals on YZ planes (2 per X-level)
+    // X=0
+    [0, 12, 24], [6, 12, 18],
+    // X=1
+    [1, 13, 25], [7, 13, 19],
+    // X=2
+    [2, 14, 26], [8, 14, 20],
 
-  function xyzToIndex(x, y, z) {
-    return z * SIZE * SIZE + y * SIZE + x;
+    // 3. 4 Space Diagonals (main diagonals through the cube)
+    [0, 13, 26],
+    [2, 13, 24],
+    [6, 13, 20],
+    [8, 13, 18]
+  ];
+
+
+  // ------------------------------------------------------------
+  // Game State
+  // ------------------------------------------------------------
+  let board = Array(NUM_CELLS).fill(null); // null, 'X', or 'O'
+  let currentPlayer = 'X';
+  let gameActive = true;
+  let isExploded = false;
+  let rotationX = 45;
+  let rotationY = -45;
+  let currentDifficulty = difficultySelect.value;
+  let blockElements = []; // Store references to all block wrapper elements
+
+  // Rotation variables
+  let isDragging = false;
+  let lastX, lastY;
+
+  // ------------------------------------------------------------
+  // UI Update Functions
+  // ------------------------------------------------------------
+
+  function updateStatus(message, className = '') {
+    statusDisplay.textContent = message;
+    statusDisplay.className = 'status ' + className;
   }
 
-  function indexToXYZ(index) {
-    var z = Math.floor(index / (SIZE * SIZE));
-    var remainder = index % (SIZE * SIZE);
-    var y = Math.floor(remainder / SIZE);
-    var x = remainder % SIZE;
-    return { x: x, y: y, z: z };
+  function applyCubeRotation() {
+    cubeElement.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
   }
 
-  // ============================================================
-  // WINNING LINES GENERATION (49 total)
-  // ============================================================
+  // ------------------------------------------------------------
+  // Board Generation and 3D Positioning
+  // ------------------------------------------------------------
 
-  function generateWinningLines() {
-    var lines = [];
+  function createBoard() {
+    cubeElement.innerHTML = ''; // Clear existing blocks
+    blockElements = []; // Clear stored references
+    const halfBoardSize = (BOARD_SIZE - 1) / 2; // For centering calculations
 
-    // --- Rows (along X axis): fixed y, fixed z, varying x -> 3x3 = 9 ---
-    for (var z = 0; z < SIZE; z++) {
-      for (var y = 0; y < SIZE; y++) {
-        lines.push([
-          xyzToIndex(0, y, z),
-          xyzToIndex(1, y, z),
-          xyzToIndex(2, y, z)
-        ]);
-      }
+    for (let i = 0; i < NUM_CELLS; i++) {
+      const blockWrapper = document.createElement('div');
+      blockWrapper.classList.add('block-wrapper');
+      blockWrapper.dataset.index = i;
+
+      // Calculate 3D position (x, y, z coordinates in grid)
+      // index = z*9 + y*3 + x
+      const z = Math.floor(i / (BOARD_SIZE * BOARD_SIZE)); // 0, 1, 2
+      const y = Math.floor((i % (BOARD_SIZE * BOARD_SIZE)) / BOARD_SIZE); // 0, 1, 2
+      const x = i % BOARD_SIZE; // 0, 1, 2
+
+      // Center the cube: coordinates range from -1 to 1 instead of 0 to 2
+      const transX = (x - halfBoardSize) * CELL_SPACING;
+      const transY = (y - halfBoardSize) * CELL_SPACING;
+      const transZ = (z - halfBoardSize) * CELL_SPACING;
+
+      // Apply initial positioning (will be updated by explode/implode)
+      blockWrapper.style.transform = `translate3d(${transX}px, ${transY}px, ${transZ}px)`;
+
+      // Create faces for the block
+      const faces = ['front', 'back', 'top', 'bottom', 'left', 'right'];
+      faces.forEach(faceName => {
+        const face = document.createElement('div');
+        face.classList.add('block-face', `block-${faceName}`);
+        blockWrapper.appendChild(face);
+      });
+
+      cubeElement.appendChild(blockWrapper);
+      blockElements.push(blockWrapper); // Store reference
     }
 
-    // --- Columns (along Y axis): fixed x, fixed z, varying y -> 3x3 = 9 ---
-    for (var z = 0; z < SIZE; z++) {
-      for (var x = 0; x < SIZE; x++) {
-        lines.push([
-          xyzToIndex(x, 0, z),
-          xyzToIndex(x, 1, z),
-          xyzToIndex(x, 2, z)
-        ]);
-      }
-    }
+    // Add cube frame overlay for visual guidance
+    const cubeFrame = document.createElement('div');
+    cubeFrame.classList.add('cube-frame');
+    cubeElement.appendChild(cubeFrame);
 
-    // --- Pillars (along Z axis): fixed x, fixed y, varying z -> 3x3 = 9 ---
-    for (var y = 0; y < SIZE; y++) {
-      for (var x = 0; x < SIZE; x++) {
-        lines.push([
-          xyzToIndex(x, y, 0),
-          xyzToIndex(x, y, 1),
-          xyzToIndex(x, y, 2)
-        ]);
-      }
-    }
-
-    // --- Face Diagonals in XY planes (fixed z): 2 per layer x 3 = 6 ---
-    for (var z = 0; z < SIZE; z++) {
-      lines.push([
-        xyzToIndex(0, 0, z),
-        xyzToIndex(1, 1, z),
-        xyzToIndex(2, 2, z)
-      ]);
-      lines.push([
-        xyzToIndex(0, 2, z),
-        xyzToIndex(1, 1, z),
-        xyzToIndex(2, 0, z)
-      ]);
-    }
-
-    // --- Face Diagonals in XZ planes (fixed y): 2 per slice x 3 = 6 ---
-    for (var y = 0; y < SIZE; y++) {
-      lines.push([
-        xyzToIndex(0, y, 0),
-        xyzToIndex(1, y, 1),
-        xyzToIndex(2, y, 2)
-      ]);
-      lines.push([
-        xyzToIndex(0, y, 2),
-        xyzToIndex(1, y, 1),
-        xyzToIndex(2, y, 0)
-      ]);
-    }
-
-    // --- Face Diagonals in YZ planes (fixed x): 2 per column x 3 = 6 ---
-    for (var x = 0; x < SIZE; x++) {
-      lines.push([
-        xyzToIndex(x, 0, 0),
-        xyzToIndex(x, 1, 1),
-        xyzToIndex(x, 2, 2)
-      ]);
-      lines.push([
-        xyzToIndex(x, 0, 2),
-        xyzToIndex(x, 1, 1),
-        xyzToIndex(x, 2, 0)
-      ]);
-    }
-
-    // --- Space Diagonals (through cube center): 4 ---
-    lines.push([
-      xyzToIndex(0, 0, 0),
-      xyzToIndex(1, 1, 1),
-      xyzToIndex(2, 2, 2)
-    ]);
-    lines.push([
-      xyzToIndex(0, 0, 2),
-      xyzToIndex(1, 1, 1),
-      xyzToIndex(2, 2, 0)
-    ]);
-    lines.push([
-      xyzToIndex(0, 2, 0),
-      xyzToIndex(1, 1, 1),
-      xyzToIndex(2, 0, 2)
-    ]);
-    lines.push([
-      xyzToIndex(2, 0, 0),
-      xyzToIndex(1, 1, 1),
-      xyzToIndex(0, 2, 2)
-    ]);
-
-    return lines;
+    // Add face planes to the frame (these are styled in CSS to create the transparent cube outline)
+    const facePlanes = ['front', 'back', 'top', 'bottom', 'left', 'right'];
+    facePlanes.forEach(faceName => {
+      const plane = document.createElement('div');
+      plane.classList.add('face-plane', `face-${faceName}`);
+      cubeFrame.appendChild(plane);
+    });
   }
 
-  // ============================================================
-  // GAME STATE CHECKS
-  // ============================================================
+  // ------------------------------------------------------------
+  // Game Logic
+  // ------------------------------------------------------------
 
-  function checkWinner(currentBoard) {
-    var target = currentBoard || board;
-    for (var i = 0; i < winningLines.length; i++) {
-      var line = winningLines[i];
-      if (target[line[0]] &&
-          target[line[0]] === target[line[1]] &&
-          target[line[0]] === target[line[2]]) {
-        return target[line[0]];
+  function checkWin() {
+    for (const line of WINNING_LINES) {
+      const [a, b, c] = line;
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+        gameActive = false;
+        updateStatus(`${board[a]} wins!`, 'winner');
+        highlightWinningLine(line);
+        return true;
       }
     }
-    return null;
+    return false;
   }
 
-  function getWinningLine(currentBoard) {
-    var target = currentBoard || board;
-    for (var i = 0; i < winningLines.length; i++) {
-      var line = winningLines[i];
-      if (target[line[0]] &&
-          target[line[0]] === target[line[1]] &&
-          target[line[0]] === target[line[2]]) {
-        return line;
+  function checkDraw() {
+    return gameActive && board.every(cell => cell !== null);
+  }
+
+  function highlightWinningLine(line) {
+    line.forEach(index => {
+      const blockWrapper = blockElements[index];
+      if (blockWrapper) {
+        // Highlight all faces of the winning block
+        Array.from(blockWrapper.children).forEach(face => {
+          if (face.classList.contains('block-face')) {
+            face.classList.add('winning-line');
+          }
+        });
       }
-    }
-    return null;
+    });
   }
 
-  function isBoardFull(currentBoard) {
-    var target = currentBoard || board;
-    for (var i = 0; i < TOTAL_CELLS; i++) {
-      if (target[i] === '') return false;
+  function placeMark(index, player) {
+    if (!gameActive || board[index] !== null) {
+      return false;
+    }
+
+    board[index] = player;
+    const blockWrapper = blockElements[index];
+    // Apply player class to the ENTIRE wrapper so all faces change color
+    blockWrapper.classList.add('occupied', `player-${player.toLowerCase()}`);
+
+    // Display X or O on the front face
+    const frontFace = blockWrapper.querySelector('.block-front');
+    if (frontFace) {
+      frontFace.textContent = player;
+      frontFace.style.display = 'flex';
+      frontFace.style.justifyContent = 'center';
+      frontFace.style.alignItems = 'center';
+      frontFace.style.fontSize = '2.5rem';
+      frontFace.style.fontWeight = 'bold';
     }
     return true;
   }
 
-  // ============================================================
-  // HEURISTIC EVALUATION
-  // ============================================================
+  function handleClick(event) {
+    if (!gameActive || currentPlayer === 'O') return; // Prevent clicks during AI turn
 
-  function heuristicEvaluate(currentBoard) {
-    var score = 0;
-    for (var i = 0; i < winningLines.length; i++) {
-      var line = winningLines[i];
-      var xCount = 0, oCount = 0, emptyCount = 0;
-      for (var j = 0; j < 3; j++) {
-        if (currentBoard[line[j]] === PLAYER_X) xCount++;
-        else if (currentBoard[line[j]] === PLAYER_O) oCount++;
-        else emptyCount++;
+    const blockWrapper = event.target.closest('.block-wrapper');
+    if (!blockWrapper) return;
+
+    const index = parseInt(blockWrapper.dataset.index);
+
+    if (placeMark(index, currentPlayer)) {
+      if (checkWin()) {
+        return;
       }
-      // AI (O) building lines -> positive score
-      if (oCount > 0 && emptyCount > 0) score += oCount * 10;
-      // Player X building lines -> negative score (block these)
-      if (xCount > 0 && emptyCount > 0) score -= xCount * 8;
-    }
-    return score;
-  }
-
-  // ============================================================
-  // MINIMAX WITH ALPHA-BETA PRUNING
-  // ============================================================
-
-  function evaluate(currentBoard) {
-    var winner = checkWinner(currentBoard);
-    if (winner === PLAYER_O) return 10;
-    if (winner === PLAYER_X) return -10;
-    return 0;
-  }
-
-  function minimax(currentBoard, depthLeft, isMaximizing, alpha, beta) {
-    var score = evaluate(currentBoard);
-
-    // Terminal states: someone won
-    if (score === 10) return score - ((depthLeft !== null && depthLeft !== undefined) ? depthLeft : 0);
-    if (score === -10) return score + ((depthLeft !== null && depthLeft !== undefined) ? depthLeft : 0);
-
-    // Draw
-    if (isBoardFull(currentBoard)) return 0;
-
-    // Depth limit reached -> use heuristic
-    if (depthLeft !== null && depthLeft !== undefined && depthLeft <= 0) {
-      return heuristicEvaluate(currentBoard.slice());
-    }
-
-    var emptyCells = [];
-    for (var i = 0; i < TOTAL_CELLS; i++) {
-      if (currentBoard[i] === '') emptyCells.push(i);
-    }
-
-    if (isMaximizing) { // AI's turn (O)
-      var bestVal = -Infinity;
-      for (var i = 0; i < emptyCells.length; i++) {
-        currentBoard[emptyCells[i]] = PLAYER_O;
-        var newVal = minimax(currentBoard, depthLeft > 0 ? depthLeft - 1 : null, false, alpha, beta);
-        currentBoard[emptyCells[i]] = '';
-        if (newVal > bestVal) bestVal = newVal;
-        alpha = Math.max(alpha, bestVal);
-        if (beta <= alpha) break; // Prune
+      if (checkDraw()) {
+        gameActive = false;
+        updateStatus('It\'s a draw!', 'draw');
+        return;
       }
-      return bestVal;
-    } else { // Player's turn (X)
-      var bestVal = Infinity;
-      for (var i = 0; i < emptyCells.length; i++) {
-        currentBoard[emptyCells[i]] = PLAYER_X;
-        var newVal = minimax(currentBoard, depthLeft > 0 ? depthLeft - 1 : null, true, alpha, beta);
-        currentBoard[emptyCells[i]] = '';
-        if (newVal < bestVal) bestVal = newVal;
-        beta = Math.min(beta, bestVal);
-        if (beta <= alpha) break; // Prune
-      }
-      return bestVal;
-    }
-  }
-
-  // ============================================================
-  // AI MOVE GENERATION
-  // ============================================================
-
-  function getAvailableMoves() {
-    var moves = [];
-    for (var i = 0; i < TOTAL_CELLS; i++) {
-      if (board[i] === '') moves.push(i);
-    }
-    return moves;
-  }
-
-  // --- Easy: completely random ---
-  function getEasyMove() {
-    var available = getAvailableMoves();
-    return available[Math.floor(Math.random() * available.length)];
-  }
-
-  // --- Move ordering helper: prioritize center, then corners, then edges ---
-  function prioritizeMoves(emptyCells) {
-    var priorityOrder = [
-      13, // Center
-      0, 2, 6, 8, 18, 20, 24, 26, // Corners (all 3 layers)
-      1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25 // Edges (all 3 layers)
-    ];
-    var result = [];
-    for (var i = 0; i < priorityOrder.length; i++) {
-      if (emptyCells.indexOf(priorityOrder[i]) !== -1) {
-        result.push(priorityOrder[i]);
+      switchPlayer();
+      if (currentPlayer === 'O') {
+        setTimeout(makeAIMove, 700); // AI moves after a short delay
       }
     }
-    for (var j = 0; j < emptyCells.length; j++) {
-      if (result.indexOf(emptyCells[j]) === -1) {
-        result.push(emptyCells[j]);
+  }
+
+  function switchPlayer() {
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+    if (gameActive) {
+      updateStatus(`${currentPlayer}'s turn`, `player-${currentPlayer.toLowerCase()}-turn`);
+    }
+  }
+
+  // ------------------------------------------------------------
+  // AI Logic
+  // ------------------------------------------------------------
+
+  function getEmptyCells() {
+    return board.map((cell, index) => cell === null ? index : null).filter(index => index !== null);
+  }
+
+  function makeAIMove() {
+    const emptyCells = getEmptyCells();
+    if (emptyCells.length === 0 || !gameActive) return;
+
+    let bestMove = -1;
+    const aiPlayer = 'O';
+    const humanPlayer = 'X';
+
+    // Helper for AI to check win conditions without altering actual game state permanently
+    function checkWinSimulated(playerToCheck, currentBoard) {
+      for (const line of WINNING_LINES) {
+        const [a, b, c] = line;
+        if (currentBoard[a] === playerToCheck && currentBoard[b] === playerToCheck && currentBoard[c] === playerToCheck) {
+          return true;
+        }
       }
-    }
-    return result;
-  }
-
-  // --- Medium: shallow minimax (depth=2) + occasional mistakes ---
-  function getMediumMove() {
-    var emptyCells = getAvailableMoves();
-
-    if (!emptyCells.length) return -1;
-    if (emptyCells.length === 1) return emptyCells[0];
-
-    // ~30% chance to make a random mistake
-    if (Math.random() < 0.30) {
-      return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      return false;
     }
 
-    var orderedCells = prioritizeMoves(emptyCells);
+    if (currentDifficulty === 'easy') {
+      bestMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    } else if (currentDifficulty === 'medium' || currentDifficulty === 'hard') {
+      // 1. Try to win
+      for (const cellIndex of emptyCells) {
+        board[cellIndex] = aiPlayer;
+        if (checkWinSimulated(aiPlayer, board)) {
+          bestMove = cellIndex;
+          board[cellIndex] = null; // Reset
+          break;
+        }
+        board[cellIndex] = null; // Reset
+      }
 
-    var bestVal = -Infinity;
-    var bestMove = orderedCells[0];
-    for (var i = 0; i < orderedCells.length; i++) {
-      var cell = orderedCells[i];
-      board[cell] = PLAYER_O;
-      var moveVal = minimax(board.slice(), 2, false, -Infinity, Infinity);
-      board[cell] = '';
-
-      if (moveVal >= 10) return cell;
-
-      if (moveVal > bestVal) { bestVal = moveVal; bestMove = cell; }
-    }
-
-    if (!bestMove || board[bestMove] !== '') {
-      bestMove = orderedCells[0];
-    }
-    return bestMove;
-  }
-
-  // --- Hard: deeper minimax with alpha-beta (depth=3) ---
-  function getHardMove() {
-    var emptyCells = getAvailableMoves();
-
-    if (!emptyCells.length) return -1;
-    if (emptyCells.length === 1) return emptyCells[0];
-
-    var orderedCells = prioritizeMoves(emptyCells);
-
-    var bestVal = -Infinity;
-    var bestMove = orderedCells[0];
-    for (var i = 0; i < orderedCells.length; i++) {
-      var cell = orderedCells[i];
-      board[cell] = PLAYER_O;
-      var moveVal = minimax(board.slice(), 3, false, -Infinity, Infinity);
-      board[cell] = '';
-
-      if (moveVal >= 10) return cell;
-
-      if (moveVal > bestVal) { bestVal = moveVal; bestMove = cell; }
-    }
-
-    if (!bestMove || board[bestMove] !== '') {
-      bestMove = orderedCells[0];
-    }
-    return bestMove;
-  }
-
-  // ============================================================
-  // CUBE FRAME OVERLAY (wireframe edges + face planes)
-  // Uses the computed cube dimensions so frame matches blocks.
-  // ============================================================
-
-  function createCubeFrame() {
-    var frame = document.createElement('div');
-    frame.className = 'cube-frame';
-    
-    // When exploded, fade out the frame so it doesn't visually block the separated layers
-    if (isExploded) {
-      frame.style.opacity = '0.15';
-    } else {
-      frame.style.opacity = '1';
-    }
-
-    var faces = [
-      { name: 'front',  transform: 'translateZ(' + CUBE_HALF + 'px)' },
-      { name: 'back',   transform: 'rotateY(180deg) translateZ(' + CUBE_HALF + 'px)' },
-      { name: 'top',    transform: 'rotateX(90deg) translateZ(' + CUBE_HALF + 'px)' },
-      { name: 'bottom', transform: 'rotateX(-90deg) translateZ(' + CUBE_HALF + 'px)' },
-      { name: 'left',   transform: 'rotateY(-90deg) translateZ(' + CUBE_HALF + 'px)' },
-      { name: 'right',  transform: 'rotateY(90deg) translateZ(' + CUBE_HALF + 'px)' }
-    ];
-
-    for (var f = 0; f < faces.length; f++) {
-      var plane = document.createElement('div');
-      plane.className = 'face-plane face-' + faces[f].name;
-      plane.style.transform = faces[f].transform;
-      frame.appendChild(plane);
-    }
-
-    function addEdge(cls, tx, ty, tz) {
-      var el = document.createElement('div');
-      el.className = 'edge-line ' + cls;
-      el.style.transform = 'translate3d(' + (tx||0) + 'px, ' + (ty||0) + 'px, ' + (tz||0) + 'px)';
-      frame.appendChild(el);
-    }
-
-    var half = CUBE_HALF;
-    // Bottom face (4 edges, z=-half)
-    addEdge('edge-h', 0, -half, -half);  // Bottom-Front
-    addEdge('edge-h', 0, -half, half);   // Bottom-Back
-    addEdge('edge-v', -half, 0, -half);  // Bottom-Left
-    addEdge('edge-v', half, 0, -half);   // Bottom-Right
-
-    // Top face (4 edges, z=+half)
-    addEdge('edge-h', 0, half, -half);   // Top-Front
-    addEdge('edge-h', 0, half, half);    // Top-Back
-    addEdge('edge-v', -half, 0, half);   // Top-Left
-    addEdge('edge-v', half, 0, half);    // Top-Right
-
-    // Connecting edges (4 pillars along Z)
-    addEdge('edge-z', -half, -half, 0); // Front-Left
-    addEdge('edge-z', half, -half, 0);  // Front-Right
-    addEdge('edge-z', -half, half, 0);  // Back-Left
-    addEdge('edge-z', half, half, 0);   // Back-Right
-
-    cubeElement.prepend(frame);
-  }
-
-  // ============================================================
-  // RENDERING — each cell becomes a small 3D block with visible faces.
-  // The blocks are positioned in true 3D space forming the larger cube.
-  // ============================================================
-
-  function buildBlock(x, y, z) {
-    var half = CELL_SIZE / 2;
-
-    var wrapper = document.createElement('div');
-    wrapper.className = 'block-wrapper';
-    wrapper.dataset.index = xyzToIndex(x, y, z);
-
-    // Position the block in 3D space (origin is center of the big cube)
-    // When exploded, we increase the Z-step to separate the layers, making inner cells clickable.
-    var stepZ = isExploded ? (STEP * 1.8) : STEP;
-    
-    var txVal = (x - 1) * STEP;
-    var tyVal = (1 - y) * STEP;
-    var tzVal = (z - 1) * stepZ;
-    
-    wrapper.style.transform = 'translate3d(' + txVal + 'px, ' + tyVal + 'px, ' + tzVal + 'px)';
-    wrapper.style.transformStyle = 'preserve-3d';
-
-    // --- Front face (the clickable X/O display surface) ---
-    var frontFace = document.createElement('div');
-    frontFace.className = 'block-face block-front';
-    frontFace.innerHTML = '&nbsp;'; // Placeholder for X/O
-    frontFace.style.transform = 'translateZ(' + half + 'px)';
-
-    // --- Top face ---
-    var topFace = document.createElement('div');
-    topFace.className = 'block-face block-top';
-    topFace.innerHTML = '&nbsp;';
-    topFace.style.transform = 'rotateX(90deg) translateZ(' + half + 'px)';
-
-    // --- Right face ---
-    var rightFace = document.createElement('div');
-    rightFace.className = 'block-face block-right';
-    rightFace.innerHTML = '&nbsp;';
-    rightFace.style.transform = 'rotateY(90deg) translateZ(' + half + 'px)';
-
-    // --- Back face ---
-    var backFace = document.createElement('div');
-    backFace.className = 'block-face block-back';
-    backFace.innerHTML = '&nbsp;';
-    backFace.style.transform = 'rotateY(180deg) translateZ(' + half + 'px)';
-
-    // --- Bottom face ---
-    var bottomFace = document.createElement('div');
-    bottomFace.className = 'block-face block-bottom';
-    bottomFace.innerHTML = '&nbsp;';
-    bottomFace.style.transform = 'rotateX(-90deg) translateZ(' + half + 'px)';
-
-    // --- Left face ---
-    var leftFace = document.createElement('div');
-    leftFace.className = 'block-face block-left';
-    leftFace.innerHTML = '&nbsp;';
-    leftFace.style.transform = 'rotateY(-90deg) translateZ(' + half + 'px)';
-
-    wrapper.appendChild(frontFace);
-    wrapper.appendChild(topFace);
-    wrapper.appendChild(rightFace);
-    wrapper.appendChild(backFace);
-    wrapper.appendChild(bottomFace);
-    wrapper.appendChild(leftFace);
-
-    return wrapper;
-  }
-
-  function renderBoard() {
-    cubeElement.innerHTML = ''; // Clear existing blocks and frame
-
-    for (var z = 0; z < SIZE; z++) {
-      for (var y = 0; y < SIZE; y++) {
-        for (var x = 0; x < SIZE; x++) {
-          var index = xyzToIndex(x, y, z);
-          var block = buildBlock(x, y, z);
-
-          // Mark occupied cells: apply player class to the ENTIRE wrapper
-          if (board[index] === PLAYER_X) {
-            block.classList.add('player-x');
-            block.classList.add('occupied');
-          } else if (board[index] === PLAYER_O) {
-            block.classList.add('player-o');
-            block.classList.add('occupied');
+      // 2. Block player's win
+      if (bestMove === -1) {
+        for (const cellIndex of emptyCells) {
+          board[cellIndex] = humanPlayer;
+          if (checkWinSimulated(humanPlayer, board)) {
+            bestMove = cellIndex;
+            board[cellIndex] = null; // Reset
+            break;
           }
+          board[cellIndex] = null; // Reset
+        }
+      }
 
-          cubeElement.appendChild(block);
+      // 3. Take center cell (most strategic for 3D)
+      // Index 13 is the very center of a 3x3x3 board (1,1,1)
+      if (bestMove === -1 && emptyCells.includes(13)) {
+        bestMove = 13;
+      }
+
+      // 4. For 'hard', try to set up forks or block opponent's forks (simplified)
+      // This is a simplification; a full minimax is very complex for 3D Tic-Tac-Toe
+      if (currentDifficulty === 'hard' && bestMove === -1) {
+        // Look for cells that create two winning lines for AI
+        // Or block a cell that creates two winning lines for human
+        // (This would require more sophisticated logic, for now, fall back to strategic cells)
+      }
+
+      // 5. Otherwise, pick a strategic available cell (corners, edges)
+      if (bestMove === -1) {
+        const strategicCells = [
+          0, 2, 6, 8, 18, 20, 24, 26, // Corners
+          4, 10, 12, 14, 16, 22, // Middle of faces/edges
+          1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25 // Remaining edges
+        ];
+        const availableStrategic = emptyCells.filter(idx => strategicCells.includes(idx));
+        if (availableStrategic.length > 0) {
+          bestMove = availableStrategic[0]; // Just take the first one found, could be randomized
+        } else {
+          bestMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
         }
       }
     }
-    createCubeFrame(); // Re-add the frame after blocks
-  }
 
-  function updateStatus(message, type) {
-    statusDisplay.textContent = message;
-    statusDisplay.className = 'status ' + type;
-  }
-
-  // ============================================================
-  // GAME FLOW
-  // ============================================================
-
-  var wasDragging = false;   // track to distinguish click vs drag
-
-  function handleCellClick(e) {
-    if (wasDragging) return; // ignore clicks that were actually drags
-    
-    var block = e.target.closest('.block-wrapper');
-    if (!block || !isGameActive || currentPlayer !== PLAYER_X) return;
-
-    var index = parseInt(block.dataset.index, 10);
-    if (board[index] !== '') return; // Cell already occupied
-
-    makeMove(index, PLAYER_X);
-    checkGameStatus();
-
-    if (isGameActive && currentPlayer === PLAYER_O) {
-      setTimeout(aiMove, 350);
-    }
-  }
-
-  function makeMove(index, player) {
-    board[index] = player;
-    renderBoard(); // Re-render the entire board after a move
-  }
-
-  function checkGameStatus() {
-    var winner = checkWinner();
-    if (winner) {
-      isGameActive = false;
-      updateStatus(winner + ' wins!', 'winner');
-      highlightWinningLine(winner);
-      return;
-    }
-    if (isBoardFull()) {
-      isGameActive = false;
-      updateStatus("It's a draw!", 'draw');
-      return;
-    }
-    currentPlayer = (currentPlayer === PLAYER_X) ? PLAYER_O : PLAYER_X;
-    var turnClass = currentPlayer === PLAYER_X ? 'player-x-turn' : 'player-o-turn';
-    updateStatus(currentPlayer + "'s turn", turnClass);
-  }
-
-  function highlightWinningLine(winner) {
-    var line = getWinningLine();
-    if (!line) return;
-
-    // Re-render the board first to ensure all elements are fresh
-    renderBoard(); 
-
-    for (var w = 0; w < line.length; w++) {
-      var idx = line[w];
-      var block = cubeElement.querySelector('.block-wrapper[data-index="' + idx + '"]');
-      if (!block) continue;
-      // Add winning glow to all visible faces
-      var faces = block.querySelectorAll('.block-face');
-      for (var f = 0; f < faces.length; f++) {
-        faces[f].classList.add('winning-line');
+    if (bestMove !== -1) {
+      if (placeMark(bestMove, aiPlayer)) {
+        if (checkWin()) {
+          return;
+        }
+        if (checkDraw()) {
+          gameActive = false;
+          updateStatus('It\'s a draw!', 'draw');
+          return;
+        }
+        switchPlayer();
       }
     }
   }
 
-  function aiMove() {
-    if (!isGameActive) return;
-    var moveIndex;
-    switch (selectedDifficulty) {
-      case 'easy':   moveIndex = getEasyMove(); break;
-      case 'medium': moveIndex = getMediumMove(); break;
-      default:       moveIndex = getHardMove(); break;
-    }
-    if (moveIndex >= 0 && board[moveIndex] === '') {
-      makeMove(moveIndex, PLAYER_O);
-      checkGameStatus();
-    }
-  }
 
-  // ============================================================
-  // ROTATION CONTROLS — Right-Click Drag (Mouse) & Touch Drag
-  // ============================================================
+  // ------------------------------------------------------------
+  // Explode View
+  // ------------------------------------------------------------
 
-  function applyRotation() {
-    cubeElement.style.transform = 'rotateX(' + rotationX + 'deg) rotateY(' + rotationY + 'deg)';
-  }
+  function toggleExplodeView() {
+    isExploded = !isExploded;
+    const halfBoardSize = (BOARD_SIZE - 1) / 2;
+    const explodeFactor = isExploded ? 1.5 : 0; // Adjust for desired separation
 
-  function onPointerDown(e) {
-    wasDragging = false;
-    
-    // Ignore Left-Click (button 0) so it passes through to block clicks for game play
-    // Only start drag on Right-Click (button 2) or Touch events
-    if (e.type === 'mousedown' && e.button !== 2) return;
+    blockElements.forEach((blockWrapper, i) => {
+      const z = Math.floor(i / (BOARD_SIZE * BOARD_SIZE));
+      const y = Math.floor((i % (BOARD_SIZE * BOARD_SIZE)) / BOARD_SIZE);
+      const x = i % BOARD_SIZE;
 
-    dragStartX = e.clientX !== undefined ? e.clientX : e.touches[0].clientX;
-    dragStartY = e.clientY !== undefined ? e.clientY : e.touches[0].clientY;
+      // Calculate initial position offsets
+      const baseTransX = (x - halfBoardSize) * CELL_SPACING;
+      const baseTransY = (y - halfBoardSize) * CELL_SPACING;
+      const baseTransZ = (z - halfBoardSize) * CELL_SPACING;
 
-    document.addEventListener('mousemove', onPointerMove);
-    document.addEventListener('mouseup', onPointerUp);
-  }
+      // Calculate explosion offset based on its position relative to the center
+      const explodeX = (x - halfBoardSize) * CELL_SPACING * explodeFactor * 0.5; // Reduced explode factor to avoid over-explosion
+      const explodeY = (y - halfBoardSize) * CELL_SPACING * explodeFactor * 0.5;
+      const explodeZ = (z - halfBoardSize) * CELL_SPACING * explodeFactor * 0.5;
 
-  function onPointerMove(e) {
-    var clientX, clientY;
-    if (e.clientX !== undefined) {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    } else {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    }
-
-    var dx = clientX - dragStartX;
-    var dy = clientY - dragStartY;
-
-    // Drag threshold: only count as drag after 3px movement
-    if (!wasDragging && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
-      wasDragging = true;
-      cubeElement.style.cursor = 'grabbing';
-    }
-
-    if (wasDragging) {
-      rotationY += dx * 0.4;   // horizontal drag -> Y-axis rotation
-      rotationX -= dy * 0.4;   // vertical drag   -> X-axis rotation
-
-      // Clamp to avoid near-gimbal-lock extremes
-      if (rotationX > 85) rotationX = 85;
-      if (rotationX < -85) rotationX = -85;
-
-      applyRotation();
-
-      dragStartX = clientX;
-      dragStartY = clientY;
-    }
-  }
-
-  function onPointerUp() {
-    wasDragging = false;
-    cubeElement.style.cursor = 'grab';
-    document.removeEventListener('mousemove', onPointerMove);
-    document.removeEventListener('mouseup', onPointerUp);
-  }
-
-  // ============================================================
-  // INITIALIZATION & RESET
-  // ============================================================
-
-  function init() {
-    statusDisplay = document.getElementById('status-display');
-    resetButton = document.getElementById('reset-btn');
-    difficultySelect = document.getElementById('difficulty-select');
-    explodeButton = document.getElementById('explode-btn');
-    cubeElement = document.getElementById('tic-tac-toe-cube');
-
-    // Generate winning lines once at start
-    winningLines = generateWinningLines();
-
-    // Set initial rotation
-    applyRotation();
-
-    // --- Attach right-click/touch drag listeners to the cube ---
-    cubeElement.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('touchstart', onPointerDown, { passive: true });
-    
-    // Prevent context menu on right-click over the cube
-    cubeElement.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
+      blockWrapper.style.transform = `translate3d(${baseTransX + explodeX}px, ${baseTransY + explodeY}px, ${baseTransZ + explodeZ}px)`;
     });
-
-    // Set cursor hint
-    cubeElement.style.cursor = 'grab';
-
-    // Difficulty selector
-    difficultySelect.addEventListener('change', function() {
-      selectedDifficulty = this.value;
-      resetGame();
-    });
-
-    // Explode View toggle
-    explodeButton.addEventListener('click', function() {
-      isExploded = !isExploded;
-      explodeButton.textContent = isExploded ? "Collapse View" : "Explode View";
-      renderBoard();
-    });
-
-    // Reset button
-    resetButton.addEventListener('click', resetGame);
-
-    // Cell click handler (event delegation on cube)
-    cubeElement.addEventListener('click', handleCellClick);
   }
+
+  // ------------------------------------------------------------
+  // Reset Game
+  // ------------------------------------------------------------
 
   function resetGame() {
-    board = new Array(TOTAL_CELLS).fill('');
-    currentPlayer = PLAYER_X;
-    isGameActive = true;
-    renderBoard(); // Initial render and frame creation
-    updateStatus("Your turn (X)", 'player-x-turn');
+    board.fill(null);
+    currentPlayer = 'X';
+    gameActive = true;
+    updateStatus('Your turn (X)', 'player-x-turn');
+
+    blockElements.forEach(blockWrapper => {
+      blockWrapper.classList.remove('occupied', 'player-x', 'player-o');
+      const frontFace = blockWrapper.querySelector('.block-front');
+      if (frontFace) {
+        frontFace.textContent = '';
+      }
+      Array.from(blockWrapper.children).forEach(face => {
+        if (face.classList.contains('block-face')) {
+          face.classList.remove('winning-line');
+        }
+      });
+    });
+
+    if (isExploded) {
+      toggleExplodeView(); // Collapse if exploded
+    }
   }
 
-  // --- Start on DOM ready ---
-  document.addEventListener('DOMContentLoaded', function() {
-    init();
+  // ------------------------------------------------------------
+  // Event Listeners
+  // ------------------------------------------------------------
+
+  function setupEventListeners() {
+    // Cube rotation
+    cubeElement.addEventListener('mousedown', (e) => {
+      if (e.button === 2) { // Right click for rotation
+        e.preventDefault(); // Prevent context menu
+        isDragging = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        cubeElement.style.cursor = 'grabbing';
+      }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - lastX;
+      const deltaY = e.clientY - lastY;
+
+      rotationY += deltaX * 0.5; // Rotate around Y-axis for horizontal mouse movement
+      rotationX -= deltaY * 0.5; // Rotate around X-axis for vertical mouse movement
+      rotationX = Math.max(-90, Math.min(90, rotationX)); // Limit X rotation to avoid flipping
+
+      applyCubeRotation();
+
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      cubeElement.style.cursor = 'grab';
+    });
+
+    // Prevent context menu on right-click drag
+    cubeElement.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Basic touch rotation (simplified)
+    cubeElement.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) { // Single touch for rotation
+        isDragging = true;
+        lastX = e.touches[0].clientX;
+        lastY = e.touches[0].clientY;
+      }
+    }, { passive: false }); // Use { passive: false } to allow preventDefault
+
+    cubeElement.addEventListener('touchmove', (e) => {
+      if (!isDragging || e.touches.length !== 1) return;
+      e.preventDefault(); // Prevent scrolling
+      const deltaX = e.touches[0].clientX - lastX;
+      const deltaY = e.touches[0].clientY - lastY;
+
+      rotationY += deltaX * 0.5;
+      rotationX -= deltaY * 0.5;
+      rotationX = Math.max(-90, Math.min(90, rotationX));
+
+      applyCubeRotation();
+
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+    }, { passive: false });
+
+    cubeElement.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+
+
+    // Cell clicks (delegated from cubeElement)
+    cubeElement.addEventListener('click', handleClick);
+
+    // Controls
+    resetBtn.addEventListener('click', resetGame);
+    explodeBtn.addEventListener('click', toggleExplodeView);
+    difficultySelect.addEventListener('change', (e) => {
+      currentDifficulty = e.target.value;
+      resetGame(); // Reset game with new difficulty
+    });
+  }
+
+  // ------------------------------------------------------------
+  // Initialization
+  // ------------------------------------------------------------
+  function init() {
+    createBoard();
+    applyCubeRotation();
+    setupEventListeners();
     resetGame();
-  });
+  }
+
+  // Run initialization when the DOM is ready
+  document.addEventListener('DOMContentLoaded', init);
 
 })();
