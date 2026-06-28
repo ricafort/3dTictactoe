@@ -83,7 +83,6 @@
     let rotationY = -45;   // Angled to show side face simultaneously
     let currentDifficulty = difficultySelect.value;
     let blockElements = []; // Store references to all block wrapper elements
-    let isDragging = false;
     let wasDragging = false; // Distinguish between a click and a drag
     let lastX, lastY;
 
