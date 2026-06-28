@@ -76,14 +76,14 @@
 
     // ------------------------------------------------------------
     // Game State
-    // ------------------------------------------------------------
-    let board = Array(NUM_CELLS).fill(null); // null, 'X', or 'O'
     let currentPlayer = 'X';
     let gameActive = true;
     let isExploded = false;
-    let rotationX = 45;
+    // Default diagonal (isometric) view showing top, front, and side faces
+    let rotationX = -28;
     let rotationY = -45;
     let currentDifficulty = difficultySelect.value;
+    let blockElements = []; // Store references to all block wrapper elements
     let blockElements = []; // Store references to all block wrapper elements
 
     // Rotation variables
