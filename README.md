@@ -45,5 +45,5 @@ Simply open `index.html` in any modern web browser. No build process or server i
 
 Feel free to fork this repository and submit pull requests if you have improvements for the AI logic or visual style!
 
----
+----
 *Built with ❤️ using Vanilla Web Technologies*
