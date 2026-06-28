@@ -103,13 +103,15 @@ select {
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
+  width: 68px; /* CELL_SIZE from JS */
+  height: 68px; /* CELL_SIZE from JS */
+  margin-left: -34px; /* -CELL_SIZE/2 */
+  margin-top: -34px;  /* -CELL_SIZE/2 */
+  border-radius: 4px; /* Even sharper edges for cube look */
+  /* Removed backface-visibility to prevent accidental culling */
 }
 
-/* ============================================================ */
-/*                   INDIVIDUAL BLOCK (small cube)                */
-/* ============================================================ */
-
-/* Centered at origin of .cube via top/left 50% and negative margins */
+=======
 .block-wrapper {
   position: absolute;
   top: 50%;
