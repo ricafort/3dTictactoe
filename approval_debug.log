@@ -1263,3 +1263,11 @@
 [2026-06-28 23:40:10] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
 [2026-06-28 23:40:10] react_task completed: payload={'approved': True}
 [2026-06-28 23:40:10] React approval result: approved=True
+[2026-06-28 23:41:21] Awaiting approval for tool=git_pull, path=None, diff_future_active=False
+[2026-06-28 23:41:23] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 23:41:23] react_task completed: payload={'approved': True}
+[2026-06-28 23:41:23] React approval result: approved=True
+[2026-06-28 23:41:26] Awaiting approval for tool=run_command, path=None, diff_future_active=False
+[2026-06-28 23:41:26] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 23:41:26] react_task completed: payload={'approved': True}
+[2026-06-28 23:41:26] React approval result: approved=True
