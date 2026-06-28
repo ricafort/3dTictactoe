@@ -5,13 +5,13 @@
   --text-secondary: #94a3b8;
   --brand-color: #8b5cf6;
   --brand-hover: #7c3aed;
-  --explode-color: #14b8a6; /* Teal for Explode button */
+  --explode-color: #14b8a6;
   --explode-hover: #0d9488;
   --cell-border: #cbd5e1;
-  --player-x-color: #ef4444; /* Red for X */
-  --player-o-color: #38bdf8; /* Blue for O (AI) */
-  --winner-color: #10b981;   /* Green for winning line */
-  --draw-color: #fbbf24;     /* Yellow for draw */
+  --player-x-color: #ef4444;
+  --player-o-color: #38bdf8;
+  --winner-color: #10b981;
+  --draw-color: #fbbf24;
 }
 
 body {
@@ -70,7 +70,6 @@ select {
   cursor: pointer;
 }
 
-/* Controls container to space out buttons nicely */
 .controls {
   display: flex;
   justify-content: center;
@@ -84,55 +83,54 @@ select {
 /* ============================================================ */
 
 .board-3d-container {
-  width: 380px; /* Adjusted for tighter fit and more pronounced 3D effect */
+  width: 380px;
   height: 380px;
-  perspective: 600px; /* Further reduced for a more pronounced 3D effect */
+  perspective: 600px;
   margin: 0 auto 1.5rem auto;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* The main cube wrapper — holds blocks + frame */
+/* The main cube wrapper */
 .cube {
-  width: 224px; /* CUBE_SIDE from JS (224px) */
-  height: 224px; /* CUBE_SIDE from JS (224px) */
+  width: 224px;
+  height: 224px;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.15s ease-out;
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
-  width: 68px; /* CELL_SIZE from JS */
-  height: 68px; /* CELL_SIZE from JS */
-  margin-left: -34px; /* -CELL_SIZE/2 */
-  margin-top: -34px;  /* -CELL_SIZE/2 */
-  border-radius: 4px; /* Even sharper edges for cube look */
-  /* Removed backface-visibility to prevent accidental culling */
 }
 
-=======
+.cube:active {
+  cursor: grabbing;
+}
+
+/* ============================================================ */
+/*                   INDIVIDUAL BLOCK (small cube)                */
+/* ============================================================ */
+
 .block-wrapper {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 68px; /* CELL_SIZE from JS */
-  height: 68px; /* CELL_SIZE from JS */
-  margin-left: -34px; /* -CELL_SIZE/2 to center the block */
-  margin-top: -34px;  /* -CELL_SIZE/2 to center the block */
+  width: 68px;
+  height: 68px;
+  margin-left: -34px;
+  margin-top: -34px;
   cursor: pointer;
-  transform-style: preserve-3d; /* Needed for faces to be 3D children */
+  transform-style: preserve-3d;
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), filter 0.25s ease;
 }
 
 /* Hover highlight for empty cells */
 .block-wrapper:not(.occupied):hover .block-front {
   border-color: var(--brand-color);
-  box-shadow: inset 0 0 16px rgba(139, 92, 246, 0.5),
-              0 0 8px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.8);
 }
 
-/* Occupied blocks slightly dimmer */
 .block-wrapper.occupied {
   cursor: default;
 }
@@ -144,50 +142,50 @@ select {
 .block-face {
   position: absolute;
   top: 50%; left: 50%;
-  width: 68px; /* CELL_SIZE from JS */
-  height: 68px; /* CELL_SIZE from JS */
-  margin-left: -34px; /* -CELL_SIZE/2 */
-  margin-top: -34px;  /* -CELL_SIZE/2 */
-  border-radius: 4px; /* Even sharper edges for cube look */
-  backface-visibility: hidden; /* Hide back faces */
+  width: 68px;
+  height: 68px;
+  margin-left: -34px;
+  margin-top: -34px;
+  border-radius: 4px;
+  /* Removed backface-visibility to prevent accidental culling */
 }
 
-/* Front face — the main clickable display surface */
+/* Front face — bright white/grey for high contrast */
 .block-front {
-  background: linear-gradient(165deg, #42608a, #334155); /* Even stronger gradient */
-  border: 3px solid var(--cell-border); /* Slightly thicker border for definition */
+  background: linear-gradient(165deg, #f8fafc, #e2e8f0);
+  border: 2px solid rgba(255, 255, 255, 0.9);
   box-shadow:
-    inset 0 -4px 8px rgba(0, 0, 0, 0.3),
-    inset 0 2px 6px rgba(255, 255, 255, 0.15); /* More highlight */
+    inset 0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.8);
 }
 
-/* Top face — lighter for "lit from above" depth cue */
+/* Top face — bright grey */
 .block-top {
-  background: linear-gradient(180deg, #6c8dbd, #5b79a6); /* Much brighter top */
-  border: 1px solid rgba(139, 216, 240, 0.5); /* Even more defined border */
+  background: linear-gradient(180deg, #cbd5e1, #94a3b8);
+  border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
-/* Right face — darker for shadowed side */
+/* Right face — bright grey */
 .block-right {
-  background: linear-gradient(180deg, #18253a, #1e2d45); /* Darker right */
-  border: 1px solid rgba(0, 0, 0, 0.5); /* More defined border */
+  background: linear-gradient(180deg, #94a3b8, #64748b);
+  border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
 /* --- Player X styling (front face) --- */
 .block-front.player-x {
   color: var(--player-x-color);
-  background: linear-gradient(165deg, #3b2530, #2a1a28);
-  border-color: rgba(239, 68, 68, 0.4);
+  background: linear-gradient(165deg, #fecaca, #fca5a5); /* Bright red */
+  border-color: rgba(239, 68, 68, 0.6);
 }
 
 /* --- Player O styling (front face) --- */
 .block-front.player-o {
   color: var(--player-o-color);
-  background: linear-gradient(165deg, #1e3a5f, #172b45);
-  border-color: rgba(56, 189, 248, 0.4);
+  background: linear-gradient(165deg, #bae6fd, #7dd3fc); /* Bright blue */
+  border-color: rgba(56, 189, 248, 0.6);
 }
 
-/* --- Winning line glow (applied to all visible faces) --- */
+/* --- Winning line glow --- */
 .block-face.winning-line {
   background: var(--winner-color) !important;
   border-color: #10b981 !important;
@@ -204,44 +202,39 @@ select {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  pointer-events: none; /* Allow clicks to pass through to blocks */
+  pointer-events: none;
   transform-style: preserve-3d;
   transition: opacity 0.4s ease;
 }
 
-/* --- 6 semi-transparent face planes (cube shell) --- */
 .face-plane {
   position: absolute;
   top: 50%; left: 50%;
-  width: 224px; /* CUBE_SIDE from JS (224px) */
-  height: 224px; /* CUBE_SIDE from JS (224px) */
-  margin-left: -112px; /* -CUBE_HALF from JS */
-  margin-top: -112px;  /* -CUBE_HALF from JS */
-  background: rgba(139, 92, 246, 0.05); /* Very subtle purple tint */
+  width: 224px;
+  height: 224px;
+  margin-left: -112px;
+  margin-top: -112px;
+  background: rgba(139, 92, 246, 0.05);
   border: none;
   transform-style: preserve-3d;
 }
 
-.face-front  { transform: translateZ(112px); } /* CUBE_HALF */
-.face-back   { transform: rotateY(180deg) translateZ(112px); } /* CUBE_HALF */
-.face-top    { transform: rotateX(90deg) translateZ(112px); } /* CUBE_HALF */
-.face-bottom { transform: rotateX(-90deg) translateZ(112px); } /* CUBE_HALF */
-.face-left   { transform: rotateY(-90deg) translateZ(112px); } /* CUBE_HALF */
-.face-right  { transform: rotateY(90deg) translateZ(112px); } /* CUBE_HALF */
+.face-front  { transform: translateZ(112px); }
+.face-back   { transform: rotateY(180deg) translateZ(112px); }
+.face-top    { transform: rotateX(90deg) translateZ(112px); }
+.face-bottom { transform: rotateX(-90deg) translateZ(112px); }
+.face-left   { transform: rotateY(-90deg) translateZ(112px); }
+.face-right  { transform: rotateY(90deg) translateZ(112px); }
 
-/* --- Wireframe edge lines (12 edges of the cube) --- */
 .edge-line {
   position: absolute;
   top: 50%; left: 50%;
-  background: rgba(139, 92, 246, 0.9); /* Almost opaque purple */
+  background: rgba(139, 92, 246, 0.9);
   transform-style: preserve-3d;
 }
 
-/* Horizontal edges in XY planes - full width */
 .edge-h { height: 4px; width: 224px; margin-left: -112px; margin-top: -2px; }
-/* Vertical edges in XY planes - full height */
 .edge-v { width: 4px; height: 224px; margin-left: -2px; margin-top: -112px; }
-/* Depth edges (along Z) - drawn as thin lines at corners */
 .edge-z { width: 4px; height: 4px; background: rgba(167, 139, 250, 1.0); margin-left: -2px; margin-top: -2px; }
 
 #reset-btn {
@@ -288,26 +281,23 @@ select {
 @media (max-width: 768px) {
   .game-container { padding: 1.2rem; }
   h1 { font-size: 1.6rem; }
-  .board-3d-container { width: 260px; height: 260px; perspective: 400px; } /* Adjusted for mobile */
+  .board-3d-container { width: 260px; height: 260px; perspective: 400px; }
 
   .cube {
-    width: 158px;  /* Mobile CUBE_SIDE (158px) */
-    height: 158px; /* Mobile CUBE_SIDE (158px) */
+    width: 158px;
+    height: 158px;
   }
 
-  /* Adjust block size for mobile */
   .block-wrapper { width: 46px; height: 46px; margin-left: -23px; margin-top: -23px; }
   .block-face { width: 46px; height: 46px; margin-left: -23px; margin-top: -23px; border-radius: 8px; }
 
-  /* Cube frame faces (mobile) */
   .face-plane {
-    width: 158px;  /* Mobile CUBE_SIDE (158px) */
-    height: 158px; /* Mobile CUBE_SIDE (158px) */
-    margin-left: -79px; /* Mobile CUBE_HALF (79px) */
-    margin-top: -79px;  /* Mobile CUBE_HALF (79px) */
+    width: 158px;
+    height: 158px;
+    margin-left: -79px;
+    margin-top: -79px;
   }
 
-  /* Mobile wireframe edges */
   .edge-h { height: 4px; width: 158px; margin-left: -79px; margin-top: -2px; }
   .edge-v { height: 4px; width: 158px; margin-left: -2px; margin-top: -79px; }
 }
