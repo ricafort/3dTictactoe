@@ -1335,3 +1335,11 @@
 [2026-06-28 23:44:22] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
 [2026-06-28 23:44:22] react_task completed: payload={'approved': True}
 [2026-06-28 23:44:22] React approval result: approved=True
+[2026-06-28 23:52:22] Awaiting approval for tool=replace_file_content, path=None, diff_future_active=False
+[2026-06-28 23:52:22] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 23:52:22] react_task completed: payload={'type': 'open_file', 'path': 'script.js'}
+[2026-06-28 23:52:22] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 23:52:22] react_task completed: payload={'type': 'open_file', 'path': 'script.js'}
+[2026-06-28 23:52:47] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 23:52:47] react_task completed: payload={'approved': True}
+[2026-06-28 23:52:47] React approval result: approved=True
