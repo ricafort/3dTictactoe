@@ -481,9 +481,30 @@
     rightFace.innerHTML = '&nbsp;';
     rightFace.style.transform = 'rotateY(90deg) translateZ(' + half + 'px)';
 
+    // --- Back face ---
+    var backFace = document.createElement('div');
+    backFace.className = 'block-face block-back';
+    backFace.innerHTML = '&nbsp;';
+    backFace.style.transform = 'rotateY(180deg) translateZ(' + half + 'px)';
+
+    // --- Bottom face ---
+    var bottomFace = document.createElement('div');
+    bottomFace.className = 'block-face block-bottom';
+    bottomFace.innerHTML = '&nbsp;';
+    bottomFace.style.transform = 'rotateX(-90deg) translateZ(' + half + 'px)';
+
+    // --- Left face ---
+    var leftFace = document.createElement('div');
+    leftFace.className = 'block-face block-left';
+    leftFace.innerHTML = '&nbsp;';
+    leftFace.style.transform = 'rotateY(-90deg) translateZ(' + half + 'px)';
+
     wrapper.appendChild(frontFace);
     wrapper.appendChild(topFace);
     wrapper.appendChild(rightFace);
+    wrapper.appendChild(backFace);
+    wrapper.appendChild(bottomFace);
+    wrapper.appendChild(leftFace);
 
     return wrapper;
   }
