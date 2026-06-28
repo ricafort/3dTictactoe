@@ -995,3 +995,15 @@
 [2026-06-28 11:40:11] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
 [2026-06-28 11:40:11] react_task completed: payload={'approved': True}
 [2026-06-28 11:40:11] React approval result: approved=True
+[2026-06-28 11:40:40] Awaiting approval for tool=replace_file_content, path=None, diff_future_active=False
+[2026-06-28 11:40:41] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:40:41] react_task completed: payload={'type': 'open_file', 'path': 'styles.css'}
+[2026-06-28 11:40:41] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:40:41] react_task completed: payload={'approved': True}
+[2026-06-28 11:40:41] React approval result: approved=True
+[2026-06-28 11:41:53] Awaiting approval for tool=write_file, path=None, diff_future_active=False
+[2026-06-28 11:41:53] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:41:53] react_task completed: payload={'type': 'open_file', 'path': 'styles.css'}
+[2026-06-28 11:41:53] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:41:53] react_task completed: payload={'approved': True}
+[2026-06-28 11:41:53] React approval result: approved=True
