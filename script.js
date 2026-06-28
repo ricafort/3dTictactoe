@@ -443,9 +443,10 @@
     wrapper.dataset.index = xyzToIndex(x, y, z);
 
     // Position the block in 3D space (origin is center of the big cube)
-    var txVal = x * STEP - CUBE_HALF;
-    var tyVal = -y * STEP + CUBE_HALF; // Y-axis inverted for screen coordinates (0 at top)
-    var tzVal = (z - 1) * STEP;         // Z-axis layers: -STEP, 0, +STEP
+    // Corrected formulas to center the 3x3x3 grid perfectly
+    var txVal = (x - 1) * STEP;
+    var tyVal = (1 - y) * STEP;
+    var tzVal = (z - 1) * STEP;
     
     wrapper.style.transform =
       'translateX(' + txVal + 'px)' +
@@ -696,5 +697,4 @@
   });
 
 })();
-
-
+<<<<<<< END
