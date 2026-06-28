@@ -75,8 +75,8 @@
     ];
 
     // ------------------------------------------------------------
-    // ------------------------------------------------------------
     // Game State
+    // ------------------------------------------------------------
     let currentPlayer = 'X';
     let gameActive = true;
     let isExploded = false;
@@ -88,13 +88,14 @@
     let wasDragging = false;     // Did mouse move during last mousedown-up cycle?
     let lastX = 0, lastY = 0;   // Last known mouse/touch position for rotation delta calc
     let blockElements = []; // Store references to all block wrapper elements
+
     function updateStatus(message, className = '') {
         statusDisplay.textContent = message;
         statusDisplay.className = 'status ' + className;
     }
 
     function applyCubeRotation() {
-
+        cubeElement.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
     }
 
     // ------------------------------------------------------------
@@ -487,6 +488,8 @@
     function init() {
         createBoard();
         setupEventListeners();
+        applyCubeRotation(); // Apply initial rotation on load
+        updateStatus('Your turn (X)', 'player-x-turn');
     }
 
     if (document.readyState === 'loading') {
