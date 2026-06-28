@@ -206,40 +206,39 @@ button:hover, select:hover {
   color: #7f1d1d;
 }
 
-/* --- Player O styling (ENTIRE block changes color) --- */
-.block-wrapper.player-o .block-face {
-  background: linear-gradient(165deg, #bfdbfe, #93c5fd); /* Bright blue */
-  border-color: #1d4ed8;
-  color: #1e3a8a;
+/* Default empty block faces */
+.block-front {
+  background: linear-gradient(165deg, #f0f0f0, #d0d0d0); /* Shiny silver */
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 -2px 4px rgba(255, 255, 255, 0.8);
+  transform: rotateY(0deg) translateZ(34px);
 }
-
-/* --- Winning Line Highlight --- */
 .block-face.winning-line {
-  background: var(--win-glow-color) !important;
-  border-color: #059669 !important;
-  box-shadow: 0 0 15px var(--win-glow-color), inset 0 0 10px rgba(255,255,255,0.6) !important;
+.block-top {
+  background: linear-gradient(180deg, #e0e0e0, #c0c0c0); /* Shiny silver */
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  transform: rotateX(90deg) translateZ(34px);
 }
-
-/* ============================================================ */
-/*                    CUBE FRAME OVERLAY                           */
-/* ============================================================ */
-
-.cube-frame {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 224px; height: 224px;
-  margin-left: -112px; margin-top: -112px;
-  transform-style: preserve-3d;
-  pointer-events: none; /* Let clicks pass through to blocks */
+.block-right {
+  background: linear-gradient(180deg, #c0c0c0, #a0a0a0); /* Shiny silver */
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  transform: rotateY(90deg) translateZ(34px);
 }
-
-.face-plane {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 224px; height: 224px;
-  margin-left: -112px; margin-top: -112px;
-  background: var(--cube-face-bg);
-  border: 1px solid var(--cube-border-color);
+.block-back {
+  background: linear-gradient(165deg, #e0e0e0, #c0c0c0); /* Shiny silver */
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  transform: rotateY(180deg) translateZ(34px);
+}
+.block-bottom {
+  background: linear-gradient(180deg, #a0a0a0, #808080); /* Shiny silver */
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  transform: rotateX(-90deg) translateZ(34px);
+}
+.block-left {
+  background: linear-gradient(180deg, #c0c0c0, #a0a0a0); /* Shiny silver */
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  transform: rotateY(-90deg) translateZ(34px);
+}
   backface-visibility: visible;
 }
 
