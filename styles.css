@@ -1,270 +1,281 @@
-/* ============================================================ */
-/*                        GLOBAL STYLES                           */
-/* ============================================================ */
+/* ============================================================
+ * 3D Tic-Tac-Toe Styles
+ * ============================================================ */
+
+/* --- Global Variables --- */
 :root {
-  --bg-color: #0f172a;       /* Dark slate background */
-  --text-color: #f8fafc;
-  --cube-border-color: rgba(255, 255, 255, 0.2);
-  --cube-face-bg: rgba(255, 255, 255, 0.03);
-  --brand-color: #8b5cf6;    /* Violet accent */
-  --player-x-color: #ef4444; /* Red */
-  --player-o-color: #3b82f6; /* Blue */
-  --win-glow-color: #10b981; /* Emerald green for winning line */
+    --bg-color: #0f172a;
+    --text-color: #f8fafc;
+    --cube-border-color: rgba(255, 255, 255, 0.2);
+    --cube-face-bg: rgba(255, 255, 255, 0.03);
+    --player-x-color: #ef4444; /* Red */
+    --player-o-color: #3b82f6; /* Blue */
+    --win-glow-color: #10b981; /* Emerald green for winning line */
 }
 
+/* --- Reset & Base Styles --- */
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  overflow: hidden; /* Prevent scrollbars from rotating cube */
-  user-select: none;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
-/* ============================================================ */
-/*                     GAME CONTAINER (UI Layer)                  */
-/* ============================================================ */
+/* --- Game Container --- */
 .game-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  z-index: 10; /* Ensure UI sits above the 3D scene */
+    text-align: center;
+    padding: 2rem;
 }
 
-/* ============================================================ */
-/*                        UI CONTROLS                             */
-/* ============================================================ */
 h1 {
-  margin-bottom: 0.5rem;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
 }
 
 .status {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  min-height: 2rem;
-  text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    min-height: 2.5rem;
 }
 
-.status.winner { color: var(--win-glow-color); }
-.status.draw   { color: #fbbf24; }
-.status.player-x-turn { color: var(--player-x-color); }
-.status.player-o-turn { color: var(--player-o-color); }
+.status.winner {
+    color: var(--win-glow-color);
+}
 
+/* --- Controls --- */
 .controls {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 5rem; /* Space between controls and cube */
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: center;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    justify-content: center;
 }
 
-button, select {
-  background: #1e293b;
-  color: var(--text-color);
-  border: 1px solid var(--cube-border-color);
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+select, button {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-button:hover, select:hover {
-  background: #334155;
-  border-color: var(--brand-color);
+select {
+    background-color: #1e293b;
+    color: var(--text-color);
 }
 
-.instruction {
-  margin-top: 2rem; /* Space between cube and instruction */
-  color: #94a3b8;
-  font-size: 0.9rem;
+button {
+    background-color: #334155;
+    color: var(--text-color);
 }
 
-/* ============================================================ */
-/*                   3D BOARD CONTAINER                            */
-/* ============================================================ */
+button:hover {
+    background-color: #475569;
+}
+
+/* --- 3D Board Container --- */
 .board-3d-container {
-  perspective: 1200px;
-  width: 300px;
-  height: 300px;
-  margin: 5rem 0; /* Vertical spacing increased */
-  position: relative;
+    width: 400px;
+    height: 400px;
+    margin: 0 auto 2rem;
+    perspective: 1200px; /* Creates the 3D depth effect */
 }
 
 .cube {
-  width: 100%;
-  height: 100%;
-  position: absolute; /* Removed from flow to allow free rotation */
-  top: 0; left: 0;
-  transform-style: preserve-3d;
-  transition: transform 0.1s linear; /* Smoother drag */
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out; /* Smooth rotation */
 }
 
-.cube:active {
-  cursor: grabbing;
+/* --- Individual Blocks (small cubes) --- */
+.block-wrapper {
+    width: 68px;
+    height: 68px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -34px; /* Half of block size for centering */
+    margin-top: -34px;
+    transform-style: preserve-3d;
+    cursor: pointer;
 }
 
-/* ============================================================ */
-/*                   INDIVIDUAL BLOCK (small cube)                */
-.block-front {
-  background: linear-gradient(165deg, #E0F2FE, #3B82F6);
-  border: 2px solid #003366;
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6), inset 0 -2px 6px rgba(0, 51, 102, 0.4), inset 2px 0 4px rgba(255, 255, 255, 0.3);
-  transform: rotateY(0deg) translateZ(34px);
+.block-wrapper:not(.occupied):hover {
+    filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.8));
 }
-.block-top {
-  background: linear-gradient(180deg, #F0F9FF, #60A5FA);
-  border: 2px solid #003366;
-  transform: rotateX(90deg) translateZ(34px);
-}
-.block-right {
-  background: linear-gradient(180deg, #BFDBFE, #2563EB);
-  border: 2px solid #003366;
-  transform: rotateY(90deg) translateZ(34px);
-}
-.block-back {
-  background: linear-gradient(165deg, #3B82F6, #1D4ED8);
-  border: 2px solid #003366;
-  transform: rotateY(180deg) translateZ(34px);
-}
-.block-bottom {
-  background: linear-gradient(180deg, #1D4ED8, #1E3A8A);
-  border: 2px solid #003366;
-  transform: rotateX(-90deg) translateZ(34px);
-}
-.block-left {
-  background: linear-gradient(180deg, #BFDBFE, #2563EB);
-  border: 2px solid #003366;
-  transform: rotateY(-90deg) translateZ(34px);
-}
+
+/* --- Faces of each small cube --- */
 .block-face {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 68px;
-  height: 68px;
-  margin-left: -34px;
-  margin-top: -34px;
-  border-radius: 4px;
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
-  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    position: absolute;
+    width: 68px;
+    height: 68px;
+    top: 50%;
+    left: 50%;
+    margin-left: -34px;
+    margin-top: -34px;
+    backface-visibility: hidden; /* Hides the inside of faces */
+    border-radius: 8px;
 }
 
-/* Default empty block faces - SHINY GOLD VERSION */
+/* --- Front Face (default, empty) --- */
 .block-front {
-  background: linear-gradient(165deg, #FFF8DC, #FFD700);
-  border: 2px solid #A67C00;
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6), inset 0 -2px 6px rgba(139, 107, 8, 0.4), inset 2px 0 4px rgba(255, 255, 255, 0.3);
-  transform: rotateY(0deg) translateZ(34px);
+    background: linear-gradient(165deg, #f8fafc, #e2e8f0);
+    transform: rotateY(0deg) translateZ(34px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
 }
-.block-top {
-  background: linear-gradient(180deg, #FFFDE7, #FFD700);
-  border: 2px solid #A67C00;
-  transform: rotateX(90deg) translateZ(34px);
-}
-.block-right {
-  background: linear-gradient(180deg, #FFF3B0, #DAA520);
-  border: 2px solid #A67C00;
-  transform: rotateY(90deg) translateZ(34px);
-}
+
+/* --- Back Face --- */
 .block-back {
-  background: linear-gradient(165deg, #FFD700, #B8860B);
-  border: 2px solid #A67C00;
-  transform: rotateY(180deg) translateZ(34px);
+    background: linear-gradient(165deg, #cbd5e1, #94a3b8);
+    transform: rotateY(180deg) translateZ(34px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
 }
+
+/* --- Top Face --- */
+.block-top {
+    background: linear-gradient(165deg, #e2e8f0, #cbd5e1);
+    transform: rotateX(90deg) translateZ(34px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+/* --- Bottom Face --- */
 .block-bottom {
-  background: linear-gradient(180deg, #B8860B, #8B6914);
-  border: 2px solid #A67C00;
-  transform: rotateX(-90deg) translateZ(34px);
+    background: linear-gradient(165deg, #94a3b8, #64748b);
+    transform: rotateX(-90deg) translateZ(34px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
 }
+
+/* --- Right Face --- */
+.block-right {
+    background: linear-gradient(165deg, #cbd5e1, #94a3b8);
+    transform: rotateY(90deg) translateZ(34px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+/* --- Left Face --- */
 .block-left {
-  background: linear-gradient(180deg, #FFF3B0, #DAA520);
-  border: 2px solid #A67C00;
-  transform: rotateY(-90deg) translateZ(34px);
+    background: linear-gradient(165deg, #94a3b8, #64748b);
+    transform: rotateY(-90deg) translateZ(34px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
-.block-face.winning-line {
-  background: linear-gradient(165deg, var(--win-glow-color), #0f6e4a) !important;
-  border-color: #0f6e4a !important;
-  box-shadow: 0 0 15px var(--win-glow-color), inset 0 0 10px var(--win-glow-color);
-  filter: brightness(1.5) contrast(1.2);
-}
-
-/* --- Player X styling (ENTIRE block changes color) --- */
+/* --- Player X Styling (Red Blocks) --- */
 .block-wrapper.player-x .block-face {
-  background: linear-gradient(165deg, #fecaca, #fca5a5); /* Bright red */
-  border-color: #b91c1c;
-  color: #7f1d1d;
+    background: linear-gradient(165deg, #fecaca, #fca5a5); /* Bright red */
+    border-color: #b91c1c;
 }
 
-.face-front  { transform: translateZ(112px); }
-.face-back   { transform: rotateY(180deg) translateZ(112px); }
-.face-top    { transform: rotateX(90deg) translateZ(112px); }
+/* --- Player O Styling (Blue Blocks) --- */
+.block-wrapper.player-o .block-face {
+    background: linear-gradient(165deg, #bfdbfe, #93c5fd); /* Bright blue */
+    border-color: #1d4ed8;
+}
+
+/* --- Winning Line Highlight (Green Glow) --- */
+.block-face.winning-line {
+    background: var(--win-glow-color) !important;
+    border-color: #059669 !important;
+    box-shadow: 0 0 15px var(--win-glow-color), inset 0 0 10px rgba(255,255,255,0.6) !important;
+}
+
+/* --- Cube Frame Overlay (Transparent Guide) --- */
+.cube-frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 224px; /* Covers the outer bounds of the 3x3x3 grid */
+    height: 224px;
+    margin-left: -112px;
+    margin-top: -112px;
+    transform-style: preserve-3d;
+    pointer-events: none; /* Let clicks pass through to blocks */
+}
+
+.face-plane {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 224px;
+    height: 224px;
+    margin-left: -112px;
+    margin-top: -112px;
+    background: var(--cube-face-bg);
+    border: 1px solid var(--cube-border-color);
+    backface-visibility: visible; /* Show both sides of planes */
+}
+
+/* Position the transparent faces to form a cube outline */
+.face-front { transform: translateZ(112px); }
+.face-back { transform: rotateY(180deg) translateZ(112px); }
+.face-top { transform: rotateX(90deg) translateZ(112px); }
 .face-bottom { transform: rotateX(-90deg) translateZ(112px); }
-.face-left   { transform: rotateY(-90deg) translateZ(112px); }
-.face-right  { transform: rotateY(90deg) translateZ(112px); }
+.face-left { transform: rotateY(-90deg) translateZ(112px); }
+.face-right { transform: rotateY(90deg) translateZ(112px); }
 
 /* --- Wireframe Edges --- */
 .edge-line {
-  position: absolute;
-  top: 50%; left: 50%;
-  background: var(--cube-border-color);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background: var(--cube-border-color);
 }
 
 .edge-h { height: 3px; width: 224px; margin-left: -112px; margin-top: -1.5px; }
 .edge-v { width: 3px; height: 224px; margin-left: -1.5px; margin-top: -112px; }
 .edge-z { width: 3px; height: 224px; margin-left: -1.5px; margin-top: -112px; transform-origin: center; transform: rotateX(90deg); }
 
-/* ============================================================ */
-/*                       RESPONSIVE                               */
-/* ============================================================ */
+/* --- Instruction Text --- */
+.instruction {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+/* --- Responsive Design (Mobile) --- */
 @media (max-width: 768px) {
-  .board-3d-container {
-    width: 220px;
-    height: 220px;
-  }
+    .board-3d-container { width: 250px; height: 250px; }
+    
+    .face-plane, .cube-frame {
+        width: 164px;
+        height: 164px;
+        margin-left: -82px;
+        margin-top: -82px;
+    }
 
-  .face-plane {
-    width: 158px;
-    height: 158px;
-    margin-left: -79px;
-    margin-top: -79px;
-  }
+    .edge-h { width: 164px; margin-left: -82px; }
+    .edge-v, .edge-z { height: 164px; margin-top: -82px; }
 
-  .edge-h { height: 3px; width: 158px; margin-left: -79px; margin-top: -1.5px; }
-  .edge-v { width: 3px; height: 158px; margin-left: -1.5px; margin-top: -112px; }
-  .edge-z { width: 3px; height: 158px; margin-left: -1.5px; margin-top: -112px; transform-origin: center; transform: rotateX(90deg); }
+    /* Smaller blocks for mobile */
+    .block-wrapper {
+        width: 50px;
+        height: 50px;
+        margin-left: -25px;
+        margin-top: -25px;
+    }
 
-  .block-wrapper {
-    width: 48px; height: 48px;
-    margin-left: -24px; margin-top: -24px;
-  }
-  .block-face {
-    width: 48px; height: 48px;
-    margin-left: -24px; margin-top: -24px;
-  }
-  /* Adjust face transforms for smaller blocks */
-  .block-front  { transform: rotateY(0deg) translateZ(24px); }
-  .block-top    { transform: rotateX(90deg) translateZ(24px); }
-  .block-right  { transform: rotateY(90deg) translateZ(24px); }
-  .block-back   { transform: rotateY(180deg) translateZ(24px); }
-  .block-bottom { transform: rotateX(-90deg) translateZ(24px); }
-  .block-left   { transform: rotateY(-90deg) translateZ(24px); }
+    .block-face {
+        width: 50px;
+        height: 50px;
+        margin-left: -25px;
+        margin-top: -25px;
+    }
+
+    /* Adjust face transforms for smaller blocks */
+    .block-front { transform: rotateY(0deg) translateZ(25px); }
+    .block-back  { transform: rotateY(180deg) translateZ(25px); }
+    .block-top   { transform: rotateX(90deg) translateZ(25px); }
+    .block-bottom{ transform: rotateX(-90deg) translateZ(25px); }
+    .block-right { transform: rotateY(90deg) translateZ(25px); }
+    .block-left  { transform: rotateY(-90deg) translateZ(25px); }
 }
