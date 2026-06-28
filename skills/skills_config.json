@@ -1,0 +1,13 @@
+{
+  "skills": {
+    "stripe_best_practices": {
+      "enabled": true,
+      "tag": "user-created",
+      "created_at": "2026-06-28T18:19:27.206146",
+      "last_modified": "2026-06-28T18:39:58.514188",
+      "last_trained": "2026-06-28T18:39:58.514377"
+    }
+  },
+  "last_training": "2026-06-28T18:39:47.042705",
+  "training_count": 4
+}
