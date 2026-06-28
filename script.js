@@ -83,7 +83,6 @@
     let rotationY = -45;   // Angled to show side face simultaneously
     let currentDifficulty = difficultySelect.value;
     let blockElements = []; // Store references to all block wrapper elements
-    // ------------------------------------------------------------
     function updateStatus(message, className = '') {
         statusDisplay.textContent = message;
         statusDisplay.className = 'status ' + className;
