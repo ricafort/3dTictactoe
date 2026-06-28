@@ -29,8 +29,11 @@
   var winningLines = [];
   var selectedDifficulty = 'medium';
 
+  // --- UI State ---
+  var isExploded = false;
+
   // --- DOM References (populated on init) ---
-  var statusDisplay, resetButton, difficultySelect, cubeElement;
+  var statusDisplay, resetButton, difficultySelect, cubeElement, explodeButton;
 
   // --- Drag state for rotation ---
   var isDragging = false;
@@ -384,6 +387,13 @@
   function createCubeFrame() {
     var frame = document.createElement('div');
     frame.className = 'cube-frame';
+    
+    // When exploded, fade out the frame so it doesn't visually block the separated layers
+    if (isExploded) {
+      frame.style.opacity = '0.15';
+    } else {
+      frame.style.opacity = '1';
+    }
 
     var faces = [
       { name: 'front',  transform: 'translateZ(' + CUBE_HALF + 'px)' },
@@ -443,11 +453,12 @@
     wrapper.dataset.index = xyzToIndex(x, y, z);
 
     // Position the block in 3D space (origin is center of the big cube)
-    // .block-wrapper is centered via CSS (top: 50%, left: 50%, negative margins).
-    // We just translate by the grid step to place the block's center correctly.
+    // When exploded, we increase the Z-step to separate the layers, making inner cells clickable.
+    var stepZ = isExploded ? (STEP * 1.8) : STEP;
+    
     var txVal = (x - 1) * STEP;
     var tyVal = (1 - y) * STEP;
-    var tzVal = (z - 1) * STEP;
+    var tzVal = (z - 1) * stepZ;
     
     wrapper.style.transform = 'translate3d(' + txVal + 'px, ' + tyVal + 'px, ' + tzVal + 'px)';
     wrapper.style.transformStyle = 'preserve-3d';
@@ -652,6 +663,7 @@
     statusDisplay = document.getElementById('status-display');
     resetButton = document.getElementById('reset-btn');
     difficultySelect = document.getElementById('difficulty-select');
+    explodeButton = document.getElementById('explode-btn');
     cubeElement = document.getElementById('tic-tac-toe-cube');
 
     // Generate winning lines once at start
@@ -671,6 +683,13 @@
     difficultySelect.addEventListener('change', function() {
       selectedDifficulty = this.value;
       resetGame();
+    });
+
+    // Explode View toggle
+    explodeButton.addEventListener('click', function() {
+      isExploded = !isExploded;
+      explodeButton.textContent = isExploded ? "Collapse View" : "Explode View";
+      renderBoard();
     });
 
     // Reset button
