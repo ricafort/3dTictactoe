@@ -5,6 +5,8 @@
   --text-secondary: #94a3b8;
   --brand-color: #8b5cf6;
   --brand-hover: #7c3aed;
+  --explode-color: #14b8a6; /* Teal for Explode button */
+  --explode-hover: #0d9488;
   --cell-border: #cbd5e1;
   --player-x-color: #ef4444; /* Red for X */
   --player-o-color: #38bdf8; /* Blue for O (AI) */
@@ -66,7 +68,15 @@ select {
   color: var(--text-primary);
   border: none;
   cursor: pointer;
-  margin-bottom: 1rem;
+}
+
+/* Controls container to space out buttons nicely */
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.5rem;
 }
 
 /* ============================================================ */
@@ -110,7 +120,7 @@ select {
   margin-top: -34px;  /* -CELL_SIZE/2 to center the block */
   cursor: pointer;
   transform-style: preserve-3d; /* Needed for faces to be 3D children */
-  transition: transform 0.2s ease-out, filter 0.25s ease;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), filter 0.25s ease;
 }
 
 /* Hover highlight for empty cells */
@@ -194,6 +204,7 @@ select {
   width: 100%; height: 100%;
   pointer-events: none; /* Allow clicks to pass through to blocks */
   transform-style: preserve-3d;
+  transition: opacity 0.4s ease;
 }
 
 /* --- 6 semi-transparent face planes (cube shell) --- */
@@ -248,6 +259,26 @@ select {
 }
 
 #reset-btn:active {
+  transform: scale(0.96);
+}
+
+#explode-btn {
+  background: var(--explode-color);
+  color: white;
+  border: none;
+  padding: 0.7rem 1.6rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+#explode-btn:hover {
+  background-color: var(--explode-hover);
+}
+
+#explode-btn:active {
   transform: scale(0.96);
 }
 
