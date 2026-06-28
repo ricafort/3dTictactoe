@@ -15,11 +15,11 @@
   // Cell block dimensions (used in rendering)
   var CELL_SIZE = 68;
   var GAP = 10;
-  var STEP = CELL_SIZE + GAP; // center-to-center step between blocks
+  var STEP = CELL_SIZE + GAP; // center-to-center step between blocks (78px)
   
   // Total edge length of the big cube (must match CSS .cube, .face-plane, .edge-h/v)
   var CUBE_SIDE = 224;
-  // Half-edge used for frame positioning and block offsets (must match CSS .face-plane margin/translateZ)
+  // Half-edge used for frame positioning and block offsets
   var CUBE_HALF = 112;
 
   // --- Game State ---
@@ -397,22 +397,22 @@
     for (var f = 0; f < faces.length; f++) {
       var plane = document.createElement('div');
       plane.className = 'face-plane face-' + faces[f].name;
-      plane.style.transform = faces[f].transform; // Set transform from JS
+      plane.style.transform = faces[f].transform;
       frame.appendChild(plane);
     }
 
     function addEdge(cls, tx, ty, tz) {
       var el = document.createElement('div');
       el.className = 'edge-line ' + cls;
-      el.style.transform = 'translateX('+(tx||0)+'px) translateY('+(ty||0)+'px) translateZ('+(tz||0)+'px)';
+      el.style.transform = 'translate3d(' + (tx||0) + 'px, ' + (ty||0) + 'px, ' + (tz||0) + 'px)';
       frame.appendChild(el);
     }
 
     var half = CUBE_HALF;
     // Bottom face (4 edges, z=-half)
-    addEdge('edge-h', 0, -half, -half);  // Bottom-Front (center X, bottom Y, front Z)
+    addEdge('edge-h', 0, -half, -half);  // Bottom-Front
     addEdge('edge-h', 0, -half, half);   // Bottom-Back
-    addEdge('edge-v', -half, 0, -half);  // Bottom-Left (left X, center Y, front Z)
+    addEdge('edge-v', -half, 0, -half);  // Bottom-Left
     addEdge('edge-v', half, 0, -half);   // Bottom-Right
 
     // Top face (4 edges, z=+half)
@@ -443,32 +443,32 @@
     wrapper.dataset.index = xyzToIndex(x, y, z);
 
     // Position the block in 3D space (origin is center of the big cube)
-    // Since .block-wrapper is at left: 50%, top: 50%, we subtract half the cell size 
-    // to ensure the block's center is at the intended coordinate.
-    var txVal = (x - 1) * STEP - (CELL_SIZE / 2);
-    var tyVal = (1 - y) * STEP - (CELL_SIZE / 2);
+    // .block-wrapper is centered via CSS (top: 50%, left: 50%, negative margins).
+    // We just translate by the grid step to place the block's center correctly.
+    var txVal = (x - 1) * STEP;
+    var tyVal = (1 - y) * STEP;
     var tzVal = (z - 1) * STEP;
     
-    wrapper.style.transform = `translate3d(${txVal}px, ${tyVal}px, ${tzVal}px)`;
+    wrapper.style.transform = 'translate3d(' + txVal + 'px, ' + tyVal + 'px, ' + tzVal + 'px)';
     wrapper.style.transformStyle = 'preserve-3d';
 
     // --- Front face (the clickable X/O display surface) ---
     var frontFace = document.createElement('div');
     frontFace.className = 'block-face block-front';
     frontFace.innerHTML = '&nbsp;'; // Placeholder for X/O
-    frontFace.style.transform = 'translateZ(' + (half) + 'px)';
+    frontFace.style.transform = 'translateZ(' + half + 'px)';
 
     // --- Top face ---
     var topFace = document.createElement('div');
     topFace.className = 'block-face block-top';
     topFace.innerHTML = '&nbsp;';
-    topFace.style.transform = 'rotateX(90deg) translateZ(' + (half) + 'px)';
+    topFace.style.transform = 'rotateX(90deg) translateZ(' + half + 'px)';
 
     // --- Right face ---
     var rightFace = document.createElement('div');
     rightFace.className = 'block-face block-right';
     rightFace.innerHTML = '&nbsp;';
-    rightFace.style.transform = 'rotateY(90deg) translateZ(' + (half) + 'px)';
+    rightFace.style.transform = 'rotateY(90deg) translateZ(' + half + 'px)';
 
     wrapper.appendChild(frontFace);
     wrapper.appendChild(topFace);
@@ -655,9 +655,9 @@
     cubeElement = document.getElementById('tic-tac-toe-cube');
 
     // Generate winning lines once at start
-    winningLines = generateWinningLines(); // Frame is created in renderBoard
+    winningLines = generateWinningLines();
 
-    // Set initial rotation via drag handlers (not sliders)
+    // Set initial rotation
     applyRotation();
 
     // --- Attach mouse/touch drag listeners to the cube ---
