@@ -1,101 +1,90 @@
+/* ============================================================ */
+/*                        GLOBAL STYLES                           */
+/* ============================================================ */
 :root {
-  --bg-color: #0f172a;
-  --card-bg: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --brand-color: #8b5cf6;
-  --brand-hover: #7c3aed;
-  --explode-color: #14b8a6;
-  --explode-hover: #0d9488;
-  --cell-border: #cbd5e1;
-  --player-x-color: #ef4444;
-  --player-o-color: #38bdf8;
-  --winner-color: #10b981;
-  --draw-color: #fbbf24;
+  --bg-color: #0f172a;       /* Dark slate background */
+  --text-color: #f8fafc;
+  --cube-border-color: rgba(255, 255, 255, 0.2);
+  --cube-face-bg: rgba(255, 255, 255, 0.03);
+  --brand-color: #8b5cf6;    /* Violet accent */
+  --player-x-color: #ef4444; /* Red */
+  --player-o-color: #3b82f6; /* Blue */
+  --win-glow-color: #10b981; /* Emerald green for winning line */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
   background-color: var(--bg-color);
-  color: var(--text-primary);
+  color: var(--text-color);
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   min-height: 100vh;
-  padding: 20px;
-  box-sizing: border-box;
+  overflow: hidden; /* Prevent scrollbars from rotating cube */
+  user-select: none;
 }
 
-.game-container {
-  text-align: center;
-  background-color: var(--card-bg);
-  border: 1px solid var(--cell-border);
-  padding: 2rem;
-  border-radius: 1rem;
-  max-width: 650px;
-  width: 100%;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-}
-
-h1 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  background: linear-gradient(to right, #a78bfa, #818cf8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-size: 2.2rem;
-}
-
+/* ============================================================ */
+/*                        UI CONTROLS                             */
+/* ============================================================ */
 .status {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 1rem;
-  min-height: 1.5rem;
-  transition: color 0.3s ease;
+  min-height: 2rem;
+  text-align: center;
 }
 
+.status.winner { color: var(--win-glow-color); }
+.status.draw   { color: #fbbf24; }
 .status.player-x-turn { color: var(--player-x-color); }
 .status.player-o-turn { color: var(--player-o-color); }
-.status.winner       { color: var(--winner-color); }
-.status.draw         { color: var(--draw-color); }
-
-select {
-  padding: 8px 16px;
-  font-size: 1rem;
-  border-radius: 0.5rem;
-  background: #334155;
-  color: var(--text-primary);
-  border: none;
-  cursor: pointer;
-}
 
 .controls {
   display: flex;
-  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+button, select {
+  background: #1e293b;
+  color: var(--text-color);
+  border: 1px solid var(--cube-border-color);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+button:hover, select:hover {
+  background: #334155;
+  border-color: var(--brand-color);
 }
 
 /* ============================================================ */
-/*                   3D BOARD CONTAINER                         */
+/*                     CUBE CONTAINER                              */
 /* ============================================================ */
-
-.board-3d-container {
-  width: 380px;
-  height: 380px;
-  perspective: 600px;
-  margin: 0 auto 1.5rem auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.cube-container {
+  perspective: 1200px;
+  width: 300px;
+  height: 300px;
+  margin: 2rem auto;
 }
 
-/* The main cube wrapper */
 .cube {
-  width: 224px;
-  height: 224px;
+  width: 100%;
+  height: 100%;
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.15s ease-out;
@@ -125,23 +114,18 @@ select {
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), filter 0.25s ease;
 }
 
-/* Highlight the ENTIRE block on hover (pop-out + brightness) */
+/* --- Hover Highlight: Bright drop-shadow on the whole block --- */
 .block-wrapper:not(.occupied):hover {
-  filter: brightness(1.3);
-  /* Note: We apply scale via JS or just rely on brightness/border to avoid breaking 3D layout */
+  filter: drop-shadow(0 0 8px var(--brand-color));
 }
 
-/* Hover highlight for empty cells */
-.block-wrapper:not(.occupied):hover .block-front {
+/* Hover highlight for empty cells (optional extra brightness) */
+.block-wrapper:not(.occupied):hover .block-face {
   border-color: var(--brand-color);
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.8);
 }
 
 .block-wrapper.occupied {
   cursor: default;
-}
-.block-wrapper.occupied .block-front {
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.4);
 }
 
 /* --- Faces of the small block --- */
@@ -153,93 +137,86 @@ select {
   margin-left: -34px;
   margin-top: -34px;
   border-radius: 4px;
+  transform-style: preserve-3d;
+  backface-visibility: hidden; /* Hide back of text/player mark when rotating */
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Front face — bright white/grey for high contrast */
+/* Default empty block faces */
 .block-front {
   background: linear-gradient(165deg, #f8fafc, #e2e8f0);
   border: 2px solid rgba(255, 255, 255, 0.9);
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.1),
-    inset 0 -2px 4px rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 -2px 4px rgba(255, 255, 255, 0.8);
+  transform: rotateY(0deg) translateZ(34px);
 }
-
-/* Top face — bright grey */
 .block-top {
   background: linear-gradient(180deg, #cbd5e1, #94a3b8);
   border: 2px solid rgba(255, 255, 255, 0.9);
+  transform: rotateX(90deg) translateZ(34px);
 }
-
-/* Right face — bright grey */
 .block-right {
   background: linear-gradient(180deg, #94a3b8, #64748b);
   border: 2px solid rgba(255, 255, 255, 0.9);
+  transform: rotateY(90deg) translateZ(34px);
 }
-
-/* Back face — slightly darker for depth */
 .block-back {
   background: linear-gradient(165deg, #cbd5e1, #94a3b8);
   border: 2px solid rgba(255, 255, 255, 0.9);
+  transform: rotateY(180deg) translateZ(34px);
 }
-
-/* Bottom face — darkest for shadow */
 .block-bottom {
   background: linear-gradient(180deg, #64748b, #475569);
   border: 2px solid rgba(255, 255, 255, 0.9);
+  transform: rotateX(-90deg) translateZ(34px);
 }
-
-/* Left face — medium dark */
 .block-left {
   background: linear-gradient(180deg, #94a3b8, #64748b);
   border: 2px solid rgba(255, 255, 255, 0.9);
+  transform: rotateY(-90deg) translateZ(34px);
 }
 
-/* --- Player X styling (front face) --- */
-.block-front.player-x {
-  color: var(--player-x-color);
+/* --- Player X styling (ENTIRE block changes color) --- */
+.block-wrapper.player-x .block-face {
   background: linear-gradient(165deg, #fecaca, #fca5a5); /* Bright red */
-  border-color: rgba(239, 68, 68, 0.6);
+  border-color: #b91c1c;
+  color: #7f1d1d;
 }
 
-/* --- Player O styling (front face) --- */
-.block-front.player-o {
-  color: var(--player-o-color);
-  background: linear-gradient(165deg, #bae6fd, #7dd3fc); /* Bright blue */
-  border-color: rgba(56, 189, 248, 0.6);
+/* --- Player O styling (ENTIRE block changes color) --- */
+.block-wrapper.player-o .block-face {
+  background: linear-gradient(165deg, #bfdbfe, #93c5fd); /* Bright blue */
+  border-color: #1d4ed8;
+  color: #1e3a8a;
 }
 
-/* --- Winning line glow --- */
+/* --- Winning Line Highlight --- */
 .block-face.winning-line {
-  background: var(--winner-color) !important;
-  border-color: #10b981 !important;
-  box-shadow:
-    inset 0 0 18px rgba(255, 255, 255, 0.4),
-    0 0 18px rgba(16, 185, 129, 0.7);
+  background: var(--win-glow-color) !important;
+  border-color: #059669 !important;
+  box-shadow: 0 0 15px var(--win-glow-color), inset 0 0 10px rgba(255,255,255,0.6) !important;
 }
 
 /* ============================================================ */
-/*                   CUBE FRAME OVERLAY                           */
+/*                    CUBE FRAME OVERLAY                           */
 /* ============================================================ */
 
 .cube-frame {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
+  top: 50%; left: 50%;
+  width: 224px; height: 224px;
+  margin-left: -112px; margin-top: -112px;
   transform-style: preserve-3d;
-  transition: opacity 0.4s ease;
+  pointer-events: none; /* Let clicks pass through to blocks */
 }
 
 .face-plane {
   position: absolute;
   top: 50%; left: 50%;
-  width: 224px;
-  height: 224px;
-  margin-left: -112px;
-  margin-top: -112px;
-  background: rgba(139, 92, 246, 0.05);
-  border: none;
-  transform-style: preserve-3d;
+  width: 224px; height: 224px;
+  margin-left: -112px; margin-top: -112px;
+  background: var(--cube-face-bg);
+  border: 1px solid var(--cube-border-color);
+  backface-visibility: visible;
 }
 
 .face-front  { transform: translateZ(112px); }
@@ -249,70 +226,25 @@ select {
 .face-left   { transform: rotateY(-90deg) translateZ(112px); }
 .face-right  { transform: rotateY(90deg) translateZ(112px); }
 
+/* --- Wireframe Edges --- */
 .edge-line {
   position: absolute;
   top: 50%; left: 50%;
-  background: rgba(139, 92, 246, 0.9);
-  transform-style: preserve-3d;
+  background: var(--cube-border-color);
 }
 
-.edge-h { height: 4px; width: 224px; margin-left: -112px; margin-top: -2px; }
-.edge-v { width: 4px; height: 224px; margin-left: -2px; margin-top: -112px; }
-.edge-z { width: 4px; height: 4px; background: rgba(167, 139, 250, 1.0); margin-left: -2px; margin-top: -2px; }
+.edge-h { height: 3px; width: 224px; margin-left: -112px; margin-top: -1.5px; }
+.edge-v { width: 3px; height: 224px; margin-left: -1.5px; margin-top: -112px; }
+.edge-z { width: 3px; height: 224px; margin-left: -1.5px; margin-top: -112px; transform-origin: center; transform: rotateX(90deg); }
 
-#reset-btn {
-  background: var(--brand-color);
-  color: white;
-  border: none;
-  padding: 0.7rem 1.6rem;
-  font-size: 1rem;
-  font-weight: bold;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-}
-
-#reset-btn:hover {
-  background-color: var(--brand-hover);
-}
-
-#reset-btn:active {
-  transform: scale(0.96);
-}
-
-#explode-btn {
-  background: var(--explode-color);
-  color: white;
-  border: none;
-  padding: 0.7rem 1.6rem;
-  font-size: 1rem;
-  font-weight: bold;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-}
-
-#explode-btn:hover {
-  background-color: var(--explode-hover);
-}
-
-#explode-btn:active {
-  transform: scale(0.96);
-}
-
-/* --- Responsive --- */
+/* ============================================================ */
+/*                       RESPONSIVE                               */
+/* ============================================================ */
 @media (max-width: 768px) {
-  .game-container { padding: 1.2rem; }
-  h1 { font-size: 1.6rem; }
-  .board-3d-container { width: 260px; height: 260px; perspective: 400px; }
-
-  .cube {
-    width: 158px;
-    height: 158px;
+  .cube-container {
+    width: 220px;
+    height: 220px;
   }
-
-  .block-wrapper { width: 46px; height: 46px; margin-left: -23px; margin-top: -23px; }
-  .block-face { width: 46px; height: 46px; margin-left: -23px; margin-top: -23px; border-radius: 8px; }
 
   .face-plane {
     width: 158px;
@@ -321,6 +253,24 @@ select {
     margin-top: -79px;
   }
 
-  .edge-h { height: 4px; width: 158px; margin-left: -79px; margin-top: -2px; }
-  .edge-v { height: 4px; width: 158px; margin-left: -2px; margin-top: -79px; }
+  .edge-h { height: 3px; width: 158px; margin-left: -79px; margin-top: -1.5px; }
+  /* Fixed dimensions for vertical edges on mobile */
+  .edge-v { width: 3px; height: 158px; margin-left: -1.5px; margin-top: -79px; }
+  .edge-z { width: 3px; height: 158px; margin-left: -1.5px; margin-top: -79px; transform-origin: center; transform: rotateX(90deg); }
+
+  .block-wrapper {
+    width: 48px; height: 48px;
+    margin-left: -24px; margin-top: -24px;
+  }
+  .block-face {
+    width: 48px; height: 48px;
+    margin-left: -24px; margin-top: -24px;
+  }
+  /* Adjust face transforms for smaller blocks */
+  .block-front  { transform: rotateY(0deg) translateZ(24px); }
+  .block-top    { transform: rotateX(90deg) translateZ(24px); }
+  .block-right  { transform: rotateY(90deg) translateZ(24px); }
+  .block-back   { transform: rotateY(180deg) translateZ(24px); }
+  .block-bottom { transform: rotateX(-90deg) translateZ(24px); }
+  .block-left   { transform: rotateY(-90deg) translateZ(24px); }
 }
