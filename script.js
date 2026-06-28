@@ -598,7 +598,7 @@
   }
 
   // ============================================================
-  // ROTATION CONTROLS — Mouse Drag & Touch Drag
+  // ROTATION CONTROLS — Right-Click Drag (Mouse) & Touch Drag
   // ============================================================
 
   function applyRotation() {
@@ -607,6 +607,11 @@
 
   function onPointerDown(e) {
     wasDragging = false;
+    
+    // Ignore Left-Click (button 0) so it passes through to block clicks for game play
+    // Only start drag on Right-Click (button 2) or Touch events
+    if (e.type === 'mousedown' && e.button !== 2) return;
+
     dragStartX = e.clientX !== undefined ? e.clientX : e.touches[0].clientX;
     dragStartY = e.clientY !== undefined ? e.clientY : e.touches[0].clientY;
 
@@ -672,9 +677,14 @@
     // Set initial rotation
     applyRotation();
 
-    // --- Attach mouse/touch drag listeners to the cube ---
+    // --- Attach right-click/touch drag listeners to the cube ---
     cubeElement.addEventListener('mousedown', onPointerDown);
     document.addEventListener('touchstart', onPointerDown, { passive: true });
+    
+    // Prevent context menu on right-click over the cube
+    cubeElement.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
 
     // Set cursor hint
     cubeElement.style.cursor = 'grab';
