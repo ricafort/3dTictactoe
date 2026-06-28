@@ -62,13 +62,13 @@ h1 {
 .status.draw   { color: #fbbf24; }
 .status.player-x-turn { color: var(--player-x-color); }
 .status.player-o-turn { color: var(--player-o-color); }
+
 .controls {
   display: flex;
   gap: 1rem;
   margin-bottom: 5rem; /* Space between controls and cube */
   align-items: center;
   flex-wrap: wrap;
-  justify-content: center;
   justify-content: center;
 }
 
@@ -101,7 +101,7 @@ button:hover, select:hover {
   perspective: 1200px;
   width: 300px;
   height: 300px;
-  margin: 1rem 0; /* Vertical spacing */
+  margin: 5rem 0; /* Vertical spacing increased */
   position: relative;
 }
 
