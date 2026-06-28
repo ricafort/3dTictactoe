@@ -75,8 +75,6 @@
     ];
 
     // ------------------------------------------------------------
-    // Game State
-    let currentPlayer = 'X';
     // ------------------------------------------------------------
     // Game State
     let currentPlayer = 'X';
@@ -87,15 +85,16 @@
     let currentDifficulty = difficultySelect.value;
     let board = new Array(NUM_CELLS).fill(null); // Game board state (null = empty)
     let isDragging = false;      // Is user currently dragging the cube?
-    let wasDragging = false;     / Did mouse move during last mousedown-up cycle?
+    let wasDragging = false;     // Did mouse move during last mousedown-up cycle?
     let lastX = 0, lastY = 0;   // Last known mouse/touch position for rotation delta calc
     let blockElements = []; // Store references to all block wrapper elements
     function updateStatus(message, className = '') {
         statusDisplay.textContent = message;
+        statusDisplay.className = 'status ' + className;
     }
 
     function applyCubeRotation() {
-        cubeElement.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
+=======
     }
 
     // ------------------------------------------------------------
