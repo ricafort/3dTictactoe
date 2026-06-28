@@ -887,3 +887,27 @@
 [2026-06-28 11:02:49] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
 [2026-06-28 11:02:49] react_task completed: payload={'approved': True}
 [2026-06-28 11:02:49] React approval result: approved=True
+[2026-06-28 11:11:53] Awaiting approval for tool=replace_file_content, path=None, diff_future_active=False
+[2026-06-28 11:11:54] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:11:54] react_task completed: payload={'type': 'open_file', 'path': 'index.html'}
+[2026-06-28 11:13:52] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:13:52] react_task completed: payload={'approved': True}
+[2026-06-28 11:13:52] React approval result: approved=True
+[2026-06-28 11:14:13] Awaiting approval for tool=replace_file_content, path=None, diff_future_active=False
+[2026-06-28 11:14:14] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:14:14] react_task completed: payload={'type': 'open_file', 'path': 'index.html'}
+[2026-06-28 11:14:14] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:14:14] react_task completed: payload={'approved': True}
+[2026-06-28 11:14:14] React approval result: approved=True
+[2026-06-28 11:15:01] Awaiting approval for tool=replace_file_content, path=None, diff_future_active=False
+[2026-06-28 11:15:01] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:15:01] react_task completed: payload={'type': 'open_file', 'path': 'index.html'}
+[2026-06-28 11:15:01] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:15:01] react_task completed: payload={'approved': True}
+[2026-06-28 11:15:01] React approval result: approved=True
+[2026-06-28 11:15:26] Awaiting approval for tool=write_file, path=None, diff_future_active=False
+[2026-06-28 11:15:27] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:15:27] react_task completed: payload={'type': 'open_file', 'path': 'index.html'}
+[2026-06-28 11:15:27] asyncio.wait finished. done_tasks=['Task'], diff_future_done=False, react_task_done=True
+[2026-06-28 11:15:27] react_task completed: payload={'approved': True}
+[2026-06-28 11:15:27] React approval result: approved=True
